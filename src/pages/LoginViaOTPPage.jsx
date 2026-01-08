@@ -1,8 +1,10 @@
+// src/pages/LoginViaOTPPage.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
+import api from '../config/api'; // Axios instance
 
 const LoginViaOTPPage = () => {
   const navigate = useNavigate();
@@ -12,14 +14,13 @@ const LoginViaOTPPage = () => {
   const [success, setSuccess] = useState('');
 
   const handleSubmit = async (e) => {
-    e?.preventDefault(); // if wrapped in form later
+    e?.preventDefault();
 
-    // Basic validation
+    // Validation
     if (!email.trim()) {
       setError('Please enter your email address');
       return;
     }
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setError('Please enter a valid email address');
@@ -31,26 +32,20 @@ const LoginViaOTPPage = () => {
     setSuccess('');
 
     try {
-      const response = await fetch('http://localhost:4000/api/auth/otp/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: email.trim() }),
-      });
+      const { data } = await api.post('/api/auth/otp/send', { email: email.trim() });
 
-      const data = await response.json();
-
-      if (response.ok) {
+      if (data.success) {
         setSuccess('OTP sent successfully! Check your email.');
-        // Optional: Navigate to OTP verification page after a delay
+        setEmail('');
+        // Optional: Navigate to OTP verification page
         // setTimeout(() => navigate('/verify-otp', { state: { email } }), 1500);
       } else {
-        setError(data.error || data.message || 'Failed to send OTP. Please try again.');
+        setError(data.message || 'Failed to send OTP. Please try again.');
       }
     } catch (err) {
       console.error('OTP send error:', err);
-      setError('Network error. Please check your connection and try again.');
+      const msg = err.response?.data?.message || 'Network error. Please check your connection and try again.';
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -109,7 +104,6 @@ const LoginViaOTPPage = () => {
 
           <Button
             type="submit"
-            onClick={handleSubmit}
             disabled={loading}
             className="w-full"
           >
@@ -117,7 +111,7 @@ const LoginViaOTPPage = () => {
           </Button>
         </form>
 
-        {/* Optional: Back link */}
+        {/* Back link */}
         <div className="mt-8 text-center">
           <button
             onClick={() => navigate('/signin')}

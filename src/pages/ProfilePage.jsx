@@ -1,11 +1,16 @@
+// src/pages/SettingsPage.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Code, Upload, TrendingUp, Heart, Star, Bell, Shield, HelpCircle, LogOut, User, Mail, Edit2, Save, X, Camera, Phone, FileText, Lock } from 'lucide-react';
+import {
+  Code, Upload, TrendingUp, Heart, Star, Bell, Shield, HelpCircle,
+  LogOut, User, Mail, Edit2, Save, X, Camera, Phone, FileText, Lock
+} from 'lucide-react';
 
 import Header from '../components/layout/Header';
 import Sidebar from '../components/layout/Sidebar';
 import MobileBottomNav from '../components/layout/MobileBottomNav';
 import SettingItem from '../components/ui/SettingItem';
+import api from '../config/api'; // Axios instance
 
 const SettingsPage = () => {
   const navigate = useNavigate();
@@ -20,19 +25,16 @@ const SettingsPage = () => {
   const [newPassword, setNewPassword] = useState('');
   const [updatingPassword, setUpdatingPassword] = useState(false);
 
+  // Fetch current user
   const fetchCurrentUser = async () => {
     const token = localStorage.getItem('access_token');
-    if (!token) {
-      navigate('/signin');
-      return;
-    }
+    if (!token) return navigate('/signin');
 
     try {
-      const res = await fetch('http://localhost:4000/api/auth/me', {
+      const { data } = await api.get('/api/auth/me', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
-      if (res.ok && data.user) {
+      if (data.user) {
         setUser(data.user);
         setEditForm({
           name: data.user.name || '',
@@ -53,6 +55,7 @@ const SettingsPage = () => {
 
   useEffect(() => { fetchCurrentUser(); }, []);
 
+  // Toggle edit mode
   const handleEditToggle = () => {
     if (isEditing) {
       setEditForm({
@@ -66,24 +69,18 @@ const SettingsPage = () => {
     setMessage({ type: '', text: '' });
   };
 
+  // Save profile changes
   const handleSaveProfile = async () => {
     setSaving(true);
     setMessage({ type: '', text: '' });
     const token = localStorage.getItem('access_token');
 
     try {
-      const res = await fetch('http://localhost:4000/api/auth/updatedetails', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(editForm)
+      const { data } = await api.put('/api/auth/updatedetails', editForm, {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      const data = await res.json();
-
-      if (res.ok && data.success) {
+      if (data.success) {
         setUser(data.user);
         setIsEditing(false);
         setMessage({ type: 'success', text: 'Profile updated successfully!' });
@@ -93,12 +90,14 @@ const SettingsPage = () => {
       }
     } catch (err) {
       console.error('Update profile error:', err);
-      setMessage({ type: 'error', text: 'An error occurred while updating profile' });
+      const msg = err.response?.data?.message || 'An error occurred while updating profile';
+      setMessage({ type: 'error', text: msg });
     } finally {
       setSaving(false);
     }
   };
 
+  // Upload avatar
   const handleAvatarUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -116,17 +115,11 @@ const SettingsPage = () => {
     formData.append('avatar', file);
 
     try {
-      const res = await fetch('http://localhost:4000/api/auth/avatar/upload', {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
-        body: formData
+      const { data } = await api.put('/api/auth/avatar/upload', formData, {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      const data = await res.json();
-
-      if (res.ok && data.success) {
+      if (data.success) {
         setUser({ ...user, avatar_url: data.avatar_url });
         setMessage({ type: 'success', text: 'Avatar uploaded successfully!' });
         setTimeout(() => setMessage({ type: '', text: '' }), 3000);
@@ -135,12 +128,14 @@ const SettingsPage = () => {
       }
     } catch (err) {
       console.error('Upload avatar error:', err);
-      setMessage({ type: 'error', text: 'An error occurred while uploading avatar' });
+      const msg = err.response?.data?.message || 'An error occurred while uploading avatar';
+      setMessage({ type: 'error', text: msg });
     } finally {
       setUploadingAvatar(false);
     }
   };
 
+  // Update password
   const handlePasswordUpdate = async () => {
     if (!newPassword || newPassword.length < 6) {
       setMessage({ type: 'error', text: 'Password must be at least 6 characters long' });
@@ -152,18 +147,11 @@ const SettingsPage = () => {
     const token = localStorage.getItem('access_token');
 
     try {
-      const res = await fetch('http://localhost:4000/api/auth/updatepassword', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ newPassword })
+      const { data } = await api.put('/api/auth/updatepassword', { newPassword }, {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      const data = await res.json();
-
-      if (res.ok && data.success) {
+      if (data.success) {
         setMessage({ type: 'success', text: 'Password updated successfully!' });
         setShowPasswordModal(false);
         setNewPassword('');
@@ -173,19 +161,18 @@ const SettingsPage = () => {
       }
     } catch (err) {
       console.error('Update password error:', err);
-      setMessage({ type: 'error', text: 'An error occurred while updating password' });
+      const msg = err.response?.data?.message || 'An error occurred while updating password';
+      setMessage({ type: 'error', text: msg });
     } finally {
       setUpdatingPassword(false);
     }
   };
 
+  // Logout
   const handleLogout = async () => {
     const token = localStorage.getItem('access_token');
     try {
-      await fetch('http://localhost:4000/api/auth/logout', {
-        method: 'GET',
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.get('/api/auth/logout', { headers: { Authorization: `Bearer ${token}` } });
     } catch (err) {
       console.error('Logout API error:', err);
     } finally {
@@ -255,6 +242,7 @@ const SettingsPage = () => {
                   <div className="flex-1">
                     {isEditing ? (
                       <div className="space-y-4">
+                        {/* Edit Fields */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
                           <input
@@ -302,9 +290,8 @@ const SettingsPage = () => {
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        <div>
-                          <h2 className="text-2xl font-semibold text-gray-900">{user.name}</h2>
-                        </div>
+                        {/* Display Profile */}
+                        <h2 className="text-2xl font-semibold text-gray-900">{user.name}</h2>
                         <div className="flex items-center gap-2 text-gray-600">
                           <Mail size={16} />
                           <span className="text-sm">{user.email}</span>

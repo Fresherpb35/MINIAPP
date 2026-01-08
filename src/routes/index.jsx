@@ -15,38 +15,45 @@ import WishlistPage from '../pages/WishlistPage';
 import UploadAppPage from '../pages/UploadAppPage';
 import DeveloperConsolePage from '../pages/DeveloperConsolePage';
 import RatingsReviewsPage from '../pages/RatingsReviewsPage';
-import CategoryDetailPage from '../pages/CategoryDetailPage'; // Add this import
-import AllAppsPage from '../pages/AllAppsPage';
+import CategoryDetailPage from '../pages/CategoryDetailPage';
 import ResetPasswordPage from '../pages/ResetPasswordPage';
+import AppStorePage from '../pages/TaskMaster'; // This is your individual app detail page
+
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/signin" element={<SignInPage />} />
+      {/* Public Routes - Anyone can access */}
+      <Route path="/home" element={<HomePage />} />
+      <Route path="/" element={<SignInPage />} />
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/login-otp" element={<LoginViaOTPPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-       <Route path="/" element={<HomePage />} />
-         <Route path="/download" element={<DownloadsPage />} />
-         <Route path="/categories" element={<CategoriesPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-               <Route path="/search" element={<SearchPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-                <Route path="/help-support" element={<HelpSupportPage />} />
+      <Route path="/categories" element={<CategoriesPage />} />
+      <Route path="/category/:categoryName" element={<CategoryDetailPage />} />
+      
+      {/* THIS IS THE MISSING ROUTE */}
+      <Route path="/app/:id" element={<AppStorePage />} />  {/* Individual app store page */}
+
+      <Route path="/search" element={<SearchPage />} />
+      <Route path="/help-support" element={<HelpSupportPage />} />
       <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+
+      {/* Protected Routes - You can add auth guard later if needed */}
+      <Route path="/download" element={<DownloadsPage />} />
+      <Route path="/profile" element={<ProfilePage />} />
       <Route path="/notifications" element={<NotificationsPage />} />
       <Route path="/wishlist" element={<WishlistPage />} />
       <Route path="/upload-app" element={<UploadAppPage />} />
       <Route path="/developer-console" element={<DeveloperConsolePage />} />
       <Route path="/ratings-reviews" element={<RatingsReviewsPage />} />
 
-       <Route path="/category/:categoryName" element={<CategoryDetailPage />} />
-       <Route path="/all-apps" element={<AllAppsPage />} />
-       <Route path="/reset-password" element={<ResetPasswordPage />} />
+      {/* Optional: Redirect old wrong path */}
+      <Route path="/app-store" element={<Navigate to="/" replace />} />
 
-      <Route path="/" element={<Navigate to="/signin" replace />} />
-      
-     
-      <Route path="*" element={<Navigate to="/signin" replace />} />
+      {/* Catch-all: Redirect unknown routes to home (or signin if you prefer) */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };

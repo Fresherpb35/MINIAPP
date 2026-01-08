@@ -8,7 +8,7 @@ const Sidebar = () => {
 
   // Map tab IDs to routes (keep consistent with MobileBottomNav)
   const tabRoutes = {
-    home: '/',
+    home: '/home',
     category: '/categories',
     search: '/search',
     download: '/download',

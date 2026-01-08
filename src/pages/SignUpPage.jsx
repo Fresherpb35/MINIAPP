@@ -1,8 +1,10 @@
+// src/pages/SignUpPage.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import SocialButton from '../components/ui/SocialButton';
+import api from '../config/api'; // Use axios instance
 
 const SignUpPage = () => {
   const navigate = useNavigate();
@@ -31,39 +33,34 @@ const SignUpPage = () => {
     setSuccess('');
 
     try {
-      const response = await fetch('http://localhost:4000/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-          role, // Now sends "user", "admin", or "doctor" → matches DB constraint
-        }),
+      const response = await api.post('/api/auth/register', {
+        name,
+        email,
+        password,
+        role, // "user", "admin", "doctor"
       });
 
-      const data = await response.json();
+      setSuccess('Registration successful! Redirecting to sign in...');
 
-      if (response.ok) {
-        setSuccess('Registration successful! Redirecting to sign in...');
+      // Reset form
+      setName('');
+      setEmail('');
+      setPassword('');
+      setRole('user');
 
-        // Reset form
-        setName('');
-        setEmail('');
-        setPassword('');
-        setRole('user');
+      setTimeout(() => {
+        navigate('/signin');
+      }, 2000);
 
-        setTimeout(() => {
-          navigate('/signin');
-        }, 2000);
-      } else {
-        setError(data.message || 'Registration failed. Please try again.');
-      }
     } catch (err) {
       console.error('Registration error:', err);
-      setError('Network error or server is unreachable. Check if backend is running on port 4000.');
+
+      // Axios errors: response from server
+      if (err.response && err.response.data) {
+        setError(err.response.data.message || 'Registration failed. Please try again.');
+      } else {
+        setError('Unable to connect to server. Please try again later.');
+      }
     } finally {
       setLoading(false);
     }
@@ -124,7 +121,9 @@ const SignUpPage = () => {
             >
               <option value="user">User</option>
               <option value="admin">Admin</option>
-              <option value="doctor">Doctor</option>
+              <option value="developer">Developer
+
+              </option>
             </select>
             <div className="absolute right-4 top-[52px] pointer-events-none">
               <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

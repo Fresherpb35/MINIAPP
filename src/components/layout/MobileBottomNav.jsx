@@ -8,7 +8,7 @@ const MobileBottomNav = () => {
 
   // Map tab IDs to actual routes
   const tabRoutes = {
-    home: '/',
+    home: '/home',
     category: '/categories',
     search: '/search',
     download: '/download',

@@ -1,8 +1,10 @@
+// src/pages/ForgotPasswordPage.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
+import api from '../config/api'; // Axios instance
 
 const ForgotPasswordPage = () => {
   const navigate = useNavigate();
@@ -22,27 +24,18 @@ const ForgotPasswordPage = () => {
     setSuccess('');
 
     try {
-      const response = await fetch('http://localhost:4000/api/auth/forgotpassword', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-        }),
-      });
+      const { data } = await api.post('/api/auth/forgotpassword', { email });
 
-      const data = await response.json();
-
-      if (response.ok) {
+      if (data.success) {
         setSuccess('Password reset link sent! Check your email.');
-        setEmail(''); // optional: clear the field
+        setEmail('');
       } else {
         setError(data.message || 'Failed to send reset link. Please try again.');
       }
     } catch (err) {
       console.error('Forgot password error:', err);
-      setError('Network error or server is unreachable. Please try again later.');
+      const msg = err.response?.data?.message || 'Network error or server is unreachable. Please try again later.';
+      setError(msg);
     } finally {
       setLoading(false);
     }
