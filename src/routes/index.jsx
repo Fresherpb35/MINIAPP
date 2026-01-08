@@ -16,7 +16,7 @@ import UploadAppPage from '../pages/UploadAppPage';
 import DeveloperConsolePage from '../pages/DeveloperConsolePage';
 import RatingsReviewsPage from '../pages/RatingsReviewsPage';
 import CategoryDetailPage from '../pages/CategoryDetailPage';
-import ResetPasswordPage from '../pages/ResetPasswordPage';
+import MagicResetPage from '../pages/MagicResetPage';
 import AppStorePage from '../pages/TaskMaster'; // This is your individual app detail page
 
 const AppRoutes = () => {
@@ -28,7 +28,8 @@ const AppRoutes = () => {
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/login-otp" element={<LoginViaOTPPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      <Route path="/reset-password" element={<ResetPasswordPage />} />
+  <Route path="/magic-login" element={<MagicResetPage />} />
+
 
       <Route path="/categories" element={<CategoriesPage />} />
       <Route path="/category/:categoryName" element={<CategoryDetailPage />} />
