@@ -1,113 +1,138 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Input from '../components/ui/Input';
-import Button from '../components/ui/Button';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../config/supabase";
+import Input from "../components/ui/Input";
+import Button from "../components/ui/Button";
 
 const ResetPasswordPage = () => {
   const navigate = useNavigate();
 
-  const [newPassword, setNewPassword] = useState('');
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [ready, setReady] = useState(false);
 
-  const [accessToken, setAccessToken] = useState('');
-  const [refreshToken, setRefreshToken] = useState('');
-
-  // 🔹 Extract tokens from URL
   useEffect(() => {
-    const hash = window.location.hash.substring(1);
-    const params = new URLSearchParams(hash);
+    const initRecovery = async () => {
+      try {
+        // Parse tokens from URL hash
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        const type = hashParams.get('type');
 
-    const access_token = params.get('access_token');
-    const refresh_token = params.get('refresh_token');
+        if (type !== 'recovery') {
+          setError("Invalid reset link type. Please request a new one.");
+          return;
+        }
 
-    if (!access_token || !refresh_token) {
-      setError('Invalid or expired reset link');
-      return;
-    }
+        if (!accessToken || !refreshToken) {
+          setError("Missing authentication tokens. Please request a new reset link.");
+          return;
+        }
 
-    setAccessToken(access_token);
-    setRefreshToken(refresh_token);
+        // Manually set the session (bypasses automatic clock validation)
+        const { data, error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+
+        if (error) {
+          console.error('Session error:', error);
+          setError("Invalid or expired reset link. Please request a new one.");
+          return;
+        }
+
+        if (!data?.session) {
+          setError("Failed to establish session. Please request a new reset link.");
+          return;
+        }
+
+        setReady(true);
+      } catch (err) {
+        console.error('Recovery error:', err);
+        setError("An error occurred. Please try again.");
+      }
+    };
+
+    initRecovery();
   }, []);
 
   const handleReset = async () => {
     if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match");
       return;
     }
 
     setLoading(true);
-    setError('');
-    setSuccess('');
+    setError("");
 
-    try {
-      const res = await fetch(
-        'http://localhost:4000/api/auth/resetpassword',
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            access_token: accessToken,
-            refresh_token: refreshToken,
-            new_password: newPassword,
-          }),
-        }
-      );
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.message || 'Password reset failed');
-        return;
-      }
-
-      setSuccess('Password reset successful! Redirecting...');
-      setTimeout(() => navigate('/signin'), 2000);
-
-    } catch (err) {
-      setError('Server error. Please try again later.');
-    } finally {
+    if (error) {
+      setError(error.message);
       setLoading(false);
+      return;
     }
+
+    await supabase.auth.signOut();
+    navigate("/signin");
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
         <h2 className="text-2xl font-semibold text-center mb-6">
-          Reset Password
+          Reset Your Password
         </h2>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-xl text-center">
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-center">
             {error}
           </div>
         )}
 
-        {success && (
-          <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-xl text-center">
-            {success}
+        {ready ? (
+          <div className="space-y-4">
+            <Input
+              type="password"
+              placeholder="New Password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              disabled={loading}
+            />
+
+            <Input
+              type="password"
+              placeholder="Confirm New Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              disabled={loading}
+            />
+
+            <Button
+              onClick={handleReset}
+              disabled={loading}
+              className="w-full"
+            >
+              {loading ? "Resetting..." : "Reset Password"}
+            </Button>
           </div>
+        ) : (
+          !error && (
+            <p className="text-center text-gray-600">
+              Verifying reset link…
+            </p>
+          )
         )}
-
-        <Input
-          type="password"
-          placeholder="Enter new password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          disabled={loading}
-        />
-
-        <Button
-          onClick={handleReset}
-          disabled={loading}
-          className="w-full mt-6"
-        >
-          {loading ? 'Resetting...' : 'Reset Password'}
-        </Button>
       </div>
     </div>
   );

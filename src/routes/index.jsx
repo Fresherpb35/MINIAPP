@@ -26,9 +26,9 @@ const AppRoutes = () => {
       <Route path="/home" element={<HomePage />} />
       <Route path="/" element={<SignInPage />} />
       <Route path="/signup" element={<SignUpPage />} />
-      <Route path="/login-otp" element={<LoginViaOTPPage />} />
+      <Route path="/otp-login" element={<LoginViaOTPPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
 
       <Route path="/categories" element={<CategoriesPage />} />
       <Route path="/category/:categoryName" element={<CategoryDetailPage />} />

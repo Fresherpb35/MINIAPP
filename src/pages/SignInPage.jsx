@@ -110,7 +110,7 @@ const SignInPage = () => {
           </p>
 
           <button
-            onClick={() => navigate('/login-otp')}
+            onClick={() => navigate('/otp-login')}
             className="mt-3 underline font-semibold"
           >
             Login via OTP
