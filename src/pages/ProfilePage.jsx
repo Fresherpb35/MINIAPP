@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Code, Upload, TrendingUp, Heart, Star, Bell, Shield, HelpCircle,
-  LogOut, User, Mail, Edit2, Save, X, Camera, Phone, FileText, Lock
+  LogOut, User, Mail, Edit2, Save, X, Camera, Phone, FileText, Lock, Users
 } from 'lucide-react';
 
 import Header from '../components/layout/Header';
@@ -14,7 +14,7 @@ import api from '../config/api'; // Axios instance
 
 const SettingsPage = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState({ name: '', email: '', phone: '', bio: '', avatar_url: null });
+  const [user, setUser] = useState({ name: '', email: '', phone: '', bio: '', avatar_url: null, role: 'user' });
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ name: '', email: '', phone: '', bio: '' });
@@ -308,6 +308,13 @@ const SettingsPage = () => {
                             <span className="text-sm">{user.bio}</span>
                           </div>
                         )}
+                        {/* Role Display */}
+                        <div className="flex items-center gap-2 text-gray-600 mt-3 pt-3 border-t border-gray-200">
+                          <Users size={16} />
+                          <span className="text-sm font-medium">
+                            Role: <span className="capitalize text-blue-600">{user.role}</span>
+                          </span>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -328,14 +335,28 @@ const SettingsPage = () => {
             </section>
 
             {/* Developer Section */}
-            <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Developer</h2>
-              <div className="bg-white rounded-2xl overflow-hidden border border-gray-200 divide-y divide-gray-200">
-                <SettingItem icon={Code} label="Developer Console" onClick={() => navigate('/developer-console')} />
-                <SettingItem icon={Upload} label="Upload App" onClick={() => navigate('/upload-app')} />
-                <SettingItem icon={TrendingUp} label="Analytics" onClick={() => navigate('/analytics')} />
-              </div>
-            </section>
+            {user.role === 'developer' && (
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Developer</h2>
+                <div className="bg-white rounded-2xl overflow-hidden border border-gray-200 divide-y divide-gray-200">
+                  <SettingItem
+                    icon={Code}
+                    label="Developer Console"
+                    onClick={() => navigate('/developer-console')}
+                  />
+                  <SettingItem
+                    icon={Upload}
+                    label="Upload App"
+                    onClick={() => navigate('/upload-app')}
+                  />
+                  <SettingItem
+                    icon={TrendingUp}
+                    label="Analytics"
+                    onClick={() => navigate('/analytics')}
+                  />
+                </div>
+              </section>
+            )}
 
             {/* Account Section */}
             <section className="mb-8">

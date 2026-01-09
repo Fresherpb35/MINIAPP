@@ -38,6 +38,8 @@ const CategoriesPage = () => {
     fetchCategories();
   }, []);
 
+
+  
   const handleCategoryClick = (categoryName) => {
     navigate(`/category/${encodeURIComponent(categoryName)}`);
   };

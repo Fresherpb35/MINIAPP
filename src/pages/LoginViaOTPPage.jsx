@@ -1,29 +1,34 @@
-// src/pages/LoginViaOTPPage.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
-import api from '../config/api'; // Axios instance
+import api from '../config/api';
 
 const LoginViaOTPPage = () => {
   const navigate = useNavigate();
+
   const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [step, setStep] = useState(1); // 1 = send otp, 2 = verify otp
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const handleSubmit = async (e) => {
-    e?.preventDefault();
-
-    // Validation
-    if (!email.trim()) {
-      setError('Please enter your email address');
-      return;
-    }
+  const validateEmail = () => {
+    if (!email.trim()) return 'Please enter your email address';
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError('Please enter a valid email address');
+    if (!emailRegex.test(email)) return 'Please enter a valid email address';
+    return null;
+  };
+
+  // STEP 1: Send OTP
+  const handleSendOtp = async (e) => {
+    e.preventDefault();
+
+    const emailError = validateEmail();
+    if (emailError) {
+      setError(emailError);
       return;
     }
 
@@ -32,20 +37,50 @@ const LoginViaOTPPage = () => {
     setSuccess('');
 
     try {
-      const { data } = await api.post('/api/auth/otp/send', { email: email.trim() });
+      const { data } = await api.post('/api/auth/otp/send', { email });
 
       if (data.success) {
-        setSuccess('OTP sent successfully! Check your email.');
-        setEmail('');
-        // Optional: Navigate to OTP verification page
-        // setTimeout(() => navigate('/verify-otp', { state: { email } }), 1500);
+        setSuccess('OTP sent to your email');
+        setStep(2);
       } else {
-        setError(data.message || 'Failed to send OTP. Please try again.');
+        setError(data.message || 'Failed to send OTP');
       }
     } catch (err) {
-      console.error('OTP send error:', err);
-      const msg = err.response?.data?.message || 'Network error. Please check your connection and try again.';
-      setError(msg);
+      setError(err.response?.data?.message || 'Network error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // STEP 2: Verify OTP & Login
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+
+    if (!otp.trim()) {
+      setError('Please enter the OTP');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const { data } = await api.post('/api/auth/otp/verify', {
+        email,
+        token: otp
+      });
+
+      if (data.success) {
+        localStorage.setItem('access_token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+
+        navigate('/home');
+      } else {
+        setError(data.message || 'Invalid OTP');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'OTP verification failed');
     } finally {
       setLoading(false);
     }
@@ -57,69 +92,68 @@ const LoginViaOTPPage = () => {
       <div className="bg-blue-600 text-white p-6 flex items-center gap-4">
         <button
           onClick={() => navigate('/signin')}
-          className="p-2 -ml-2 hover:bg-blue-700 rounded-full transition-colors"
-          aria-label="Back to sign in"
+          className="p-2 -ml-2 hover:bg-blue-700 rounded-full"
         >
           <ArrowLeft size={28} />
         </button>
         <h1 className="text-2xl font-semibold">Login with OTP</h1>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 p-6 max-w-md mx-auto w-full mt-12">
-        <p className="text-gray-600 text-center mb-8">
-          Enter your email address and we'll send you a one-time password (OTP) to log in securely.
-        </p>
-
-        {/* Error / Success Messages */}
         {error && (
-          <div
-            role="alert"
-            className="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl text-center"
-          >
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl text-center">
             {error}
           </div>
         )}
 
         {success && (
-          <div
-            role="alert"
-            className="mb-6 p-4 bg-green-50 border border-green-200 text-green-800 rounded-xl text-center"
-          >
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-800 rounded-xl text-center">
             {success}
           </div>
         )}
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <Input
-            type="email"
-            placeholder="your@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={loading}
-            autoComplete="email"
-            required
-          />
+        {step === 1 && (
+          <form onSubmit={handleSendOtp} className="space-y-6">
+            <Input
+              type="email"
+              placeholder="your@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
+              required
+            />
 
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full"
-          >
-            {loading ? 'Sending OTP...' : 'Send OTP'}
-          </Button>
-        </form>
+            <Button type="submit" disabled={loading} className="w-full">
+              {loading ? 'Sending OTP...' : 'Send OTP'}
+            </Button>
+          </form>
+        )}
 
-        {/* Back link */}
-        <div className="mt-8 text-center">
-          <button
-            onClick={() => navigate('/signin')}
-            className="text-blue-600 hover:underline text-sm"
-          >
-            ← Back to Sign In
-          </button>
-        </div>
+        {step === 2 && (
+          <form onSubmit={handleVerifyOtp} className="space-y-6">
+            <Input
+              type="text"
+              placeholder="Enter 6-digit OTP"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              disabled={loading}
+              maxLength={6}
+              required
+            />
+
+            <Button type="submit" disabled={loading} className="w-full">
+              {loading ? 'Verifying...' : 'Verify & Login'}
+            </Button>
+
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              className="text-sm text-blue-600 underline w-full text-center"
+            >
+              Change email
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

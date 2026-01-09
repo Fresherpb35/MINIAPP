@@ -1,3 +1,4 @@
+// src/pages/HomePage.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/layout/Header';
@@ -14,31 +15,41 @@ import { getCategories, getFeaturedApps, getTopApps, searchApps } from '../servi
 const HomePage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('home');
+
+  // Search state
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
 
+  // App data
+  const [allApps, setAllApps] = useState([]);
   const [categories, setCategories] = useState([]);
   const [featuredApps, setFeaturedApps] = useState([]);
   const [popularApps, setPopularApps] = useState([]);
 
+  // UI state
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [searchLoading, setSearchLoading] = useState(false);
 
+  // 🔹 Fetch all initial data
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       setError('');
+
       try {
-        const [catRes, featRes, topRes] = await Promise.all([
+        const [catRes, featRes, topRes, allAppsRes] = await Promise.all([
           getCategories(),
           getFeaturedApps(),
           getTopApps(),
+          searchApps({ sortBy: 'downloads', limit: 200 }), // Fetch all apps once, NO q
         ]);
 
         if (catRes.data.success) setCategories(catRes.data.data || []);
         if (featRes.data.success) setFeaturedApps(featRes.data.data || []);
         if (topRes.data.success) setPopularApps(topRes.data.data || []);
+        if (allAppsRes.data.success) setAllApps(allAppsRes.data.data || []);
+
       } catch (err) {
         console.error('HomePage fetch error:', err);
         setError('Failed to load apps. Please try again later.');
@@ -50,28 +61,25 @@ const HomePage = () => {
     fetchData();
   }, []);
 
-  const handleSearch = async (query) => {
+  // 🔹 Handle client-side search
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+
     if (!query.trim()) {
       setSearchResults([]);
       return;
     }
+
     setSearchLoading(true);
-    setError('');
-    try {
-      const res = await searchApps({ q: query, limit: 20 });
-      if (res.data.success) {
-        setSearchResults(res.data.data || []);
-      } else {
-        setError('Failed to fetch search results.');
-      }
-    } catch (err) {
-      console.error('Search error:', err);
-      setError('Network error while searching.');
-    } finally {
-      setSearchLoading(false);
-    }
+    const q = query.toLowerCase();
+
+    // Filter apps by name on frontend
+    const filtered = allApps.filter(app => app.name?.toLowerCase().includes(q));
+    setSearchResults(filtered);
+    setSearchLoading(false);
   };
 
+  // 🔹 Navigation handlers
   const handleCategoryClick = (categoryName) => {
     navigate(`/category/${encodeURIComponent(categoryName)}`);
   };
@@ -80,12 +88,11 @@ const HomePage = () => {
     navigate('/notifications');
   };
 
-  // Go to app detail page
   const handleAppClick = (appId) => {
     navigate(`/app/${appId}`);
   };
 
-  // Handle install (requires login)
+  // 🔹 Handle install/download (requires login)
   const handleInstall = async (appId) => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -119,6 +126,7 @@ const HomePage = () => {
       <Header onNotificationClick={handleNotificationClick} />
 
       <main className="lg:ml-64 pb-20 lg:pb-6">
+        {/* Notification button for large screens */}
         <div className="hidden lg:flex items-center justify-end px-8 py-6 bg-white border-b border-gray-200">
           <button
             onClick={handleNotificationClick}
@@ -133,11 +141,8 @@ const HomePage = () => {
           <div className="mb-6">
             <SearchBar
               value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                if (!e.target.value.trim()) setSearchResults([]);
-              }}
-              onSearch={() => handleSearch(searchQuery)}
+              onChange={(e) => handleSearch(e.target.value)}
+              onSearch={() => {}}
             />
           </div>
 
@@ -162,7 +167,7 @@ const HomePage = () => {
                           category={app.category}
                           size={`${(app.file_size / (1024 * 1024)).toFixed(2)} MB`}
                           onInstall={(e) => {
-                            e.stopPropagation(); // Crucial: prevent navigation when clicking Install
+                            e.stopPropagation();
                             handleInstall(app.id);
                           }}
                         />
@@ -232,7 +237,7 @@ const HomePage = () => {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold text-gray-900">Popular This Week</h2>
               <button
-                onClick={() => navigate('/all-apps')}
+                onClick={() => navigate('/home')}
                 className="text-blue-500 font-semibold hover:text-blue-600"
               >
                 See All

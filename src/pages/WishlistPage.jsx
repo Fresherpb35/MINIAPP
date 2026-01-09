@@ -121,7 +121,7 @@ const WishlistPage = () => {
                 <p className="text-2xl font-medium text-gray-600 mb-2">Your wishlist is empty</p>
                 <p className="text-gray-500 mb-6">Apps you ❤️ will appear here</p>
                 <button
-                  onClick={() => navigate('/')}
+                  onClick={() => navigate('/home')}
                   className="px-8 py-3 bg-blue-500 text-white rounded-full font-semibold hover:bg-blue-600 transition"
                 >
                   Browse Apps

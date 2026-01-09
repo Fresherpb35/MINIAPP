@@ -13,6 +13,9 @@ const AppDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [downloadProgress, setDownloadProgress] = useState(0);
+const [isDownloading, setIsDownloading] = useState(false);
+
   
   // Wishlist states
   const [isFavorited, setIsFavorited] = useState(false);
@@ -139,88 +142,118 @@ const AppDetailPage = () => {
       setTimeout(() => setWishlistMessage(''), 3000);
     }
   };
+const handleInstall = async () => {
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    alert('Please sign in to install apps');
+    navigate('/signin');
+    return;
+  }
 
-  // Handle Install
-  const handleInstall = async () => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      alert('Please sign in to install apps');
-      navigate('/signin');
-      return;
+  setIsDownloading(true);
+  setDownloadProgress(0);
+
+  try {
+    const res = await api.get(`/api/apps/${id}/download`, {
+      headers: { Authorization: `Bearer ${token}` },
+      responseType: 'blob', // important for APK download
+      onDownloadProgress: (progressEvent) => {
+        if (progressEvent.total) {
+          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setDownloadProgress(percent);
+        }
+      },
+    });
+
+    if (res.status === 200) {
+      const blob = new Blob([res.data], { type: 'application/vnd.android.package-archive' });
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${app.name.replace(/\s+/g, '_')}.apk`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      setDownloadProgress(100);
+      alert('Download completed!');
     }
+  } catch (err) {
+    console.error('Download error:', err);
+    alert(err.response?.data?.message || 'Failed to start download. Please try again.');
+  } finally {
+    setIsDownloading(false);
+    setTimeout(() => setDownloadProgress(0), 2000);
+  }
+};
 
-    try {
-      const res = await api.get(`/api/apps/${id}/download`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
 
-      if (res.data.success) {
-        window.open(res.data.data.downloadUrl, '_blank');
-      } else {
-        alert(res.data.message || 'Failed to get download link');
-      }
-    } catch (err) {
-      alert('Download failed. Please try again.');
-    }
-  };
+
 
   // Handle Submit Review
-  const handleSubmitReview = async () => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      alert('Please sign in to submit a review');
-      navigate('/signin');
-      return;
-    }
+ const handleSubmitReview = async () => {
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    alert('Please sign in to submit a review');
+    navigate('/signin');
+    return;
+  }
 
-    if (rating === 0 || !reviewText.trim()) {
-      setSubmitError('Please give a rating and write a review');
-      return;
-    }
+  if (rating === 0 || !reviewText.trim()) {
+    setSubmitError('Please give a rating and write a review');
+    return;
+  }
 
-    setSubmittingReview(true);
-    setSubmitMessage('');
-    setSubmitError('');
+  setSubmittingReview(true);
+  setSubmitMessage('');
+  setSubmitError('');
 
-    try {
-      const res = await api.post(
-        `/api/apps/${id}/reviews`,
-        {
-          rating: Number(rating),
-          comment: reviewText.trim(),
+  try {
+    const res = await api.post(
+      `/api/apps/${id}/reviews`,
+      {
+        rating: Number(rating),
+        comment: reviewText.trim(),
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (res.data.success) {
-        setSubmitMessage('Review submitted successfully!');
-        setRating(0);
-        setReviewText('');
-        setHoveredRating(0);
-
-        const reviewsRes = await api.get(`/api/apps/${id}/reviews`, {
-          params: { page: 1, limit: 10 }
-        });
-        if (reviewsRes.data.success) {
-          setReviews(reviewsRes.data.data || []);
-        }
       }
-    } catch (err) {
-      console.error('Review submission failed:', err);
-      setSubmitError(err.response?.data?.message || 'Failed to submit review');
-    } finally {
-      setSubmittingReview(false);
-      setTimeout(() => {
-        setSubmitMessage('');
-        setSubmitError('');
-      }, 6000);
+    );
+
+    if (res.data.success) {
+      setSubmitMessage('Review submitted successfully!');
+      setRating(0);
+      setReviewText('');
+      setHoveredRating(0);
+
+      // Refresh reviews immediately
+      const reviewsRes = await api.get(`/api/apps/${id}/reviews`, {
+        params: { page: 1, limit: 10 },
+      });
+      if (reviewsRes.data.success) {
+        setReviews(reviewsRes.data.data || []);
+      }
     }
-  };
+  } catch (err) {
+    console.error('Review submission failed:', err);
+    // Use backend error message if available
+    setSubmitError(
+      err.response?.data?.message ||
+      'Failed to submit review. Make sure you have downloaded this app.'
+    );
+  } finally {
+    setSubmittingReview(false);
+    setTimeout(() => {
+      setSubmitMessage('');
+      setSubmitError('');
+    }, 6000);
+  }
+};
 
   if (loading) {
     return (
@@ -275,30 +308,56 @@ const AppDetailPage = () => {
             </div>
           </div>
 
-          <div className="mt-6 flex items-center gap-3">
-            <button
-              onClick={handleInstall}
-              className="flex-1 bg-blue-500 text-white py-3 rounded-full font-semibold hover:bg-blue-600 transition"
-            >
-              Install
-            </button>
-            <button
-              onClick={toggleWishlist}
-              disabled={wishlistLoading}
-              className="p-3 rounded-full border border-gray-300 hover:bg-gray-50 transition relative"
-            >
-              <Heart
-                className={`w-6 h-6 transition-all ${
-                  isFavorited ? 'fill-red-500 text-red-500' : 'text-gray-700'
-                }`}
-              />
-              {wishlistLoading && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-                </div>
-              )}
-            </button>
-          </div>
+  {/* Install + Wishlist */}
+<div className="mt-6 flex flex-col gap-3">
+  {/* Buttons row */}
+  <div className="flex items-center gap-3">
+    {/* Install Button */}
+    <button
+      onClick={handleInstall}
+      disabled={isDownloading}
+      className="flex-1 bg-blue-500 text-white py-3 rounded-full font-semibold hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition relative"
+    >
+      {isDownloading ? `Downloading... ${downloadProgress}%` : 'Install'}
+    </button>
+
+    {/* Wishlist Button */}
+    <button
+      onClick={toggleWishlist}
+      disabled={wishlistLoading || isDownloading} // prevent wishlist click while downloading
+      className="p-3 rounded-full border border-gray-300 hover:bg-gray-50 transition relative"
+    >
+      <Heart
+        className={`w-6 h-6 transition-all ${
+          isFavorited ? 'fill-red-500 text-red-500' : 'text-gray-700'
+        }`}
+      />
+      {wishlistLoading && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
+    </button>
+  </div>
+
+  {/* Download Progress Bar */}
+  {isDownloading && (
+    <div className="w-full bg-gray-200 rounded-full h-3">
+      <div
+        className="bg-blue-500 h-3 rounded-full transition-all"
+        style={{ width: `${downloadProgress}%` }}
+      />
+    </div>
+  )}
+
+  {/* Wishlist message */}
+  {wishlistMessage && (
+    <div className="w-full p-2 bg-green-100 text-green-800 rounded-lg text-center font-medium">
+      {wishlistMessage}
+    </div>
+  )}
+</div>
+
         </div>
 
         {/* Screenshots */}

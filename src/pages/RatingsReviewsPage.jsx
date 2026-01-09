@@ -1,34 +1,97 @@
+// src/pages/RatingsReviewsPage.jsx
 import React, { useEffect, useState } from 'react';
 import Header from '../components/layout/Header';
 import Sidebar from '../components/layout/Sidebar';
 import MobileBottomNav from '../components/layout/MobileBottomNav';
-import { getUserReviews } from '../services/reviewService';
+import {
+  getUserReviews,
+  updateUserReview,
+  deleteUserReview,
+} from '../services/reviewService';
 
 const RatingsReviewsPage = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [editingReviewId, setEditingReviewId] = useState(null);
+  const [editData, setEditData] = useState({ rating: '', comment: '' });
+  const [actionLoading, setActionLoading] = useState(false);
 
+  // Fetch reviews on mount
   useEffect(() => {
-    const fetchReviews = async () => {
-      setLoading(true);
-      try {
-        const res = await getUserReviews(1, 10); // fetch first 10 reviews
-        if (res.success) {
-          setReviews(res.data);
-        } else {
-          setError(res.message || 'Failed to load reviews');
-        }
-      } catch (err) {
-        console.error(err);
-        setError('Unable to load reviews. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchReviews();
   }, []);
+
+  const fetchReviews = async () => {
+    setLoading(true);
+    try {
+      const res = await getUserReviews(1, 50); // Fetch first 50 reviews
+      if (res.success) {
+        setReviews(res.data);
+      } else {
+        setError(res.message || 'Failed to load reviews');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Unable to load reviews. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Start editing a review
+  const handleEdit = (review) => {
+    setEditingReviewId(review.id);
+    setEditData({ rating: review.rating, comment: review.comment });
+  };
+
+  // Cancel editing
+  const handleCancelEdit = () => {
+    setEditingReviewId(null);
+    setEditData({ rating: '', comment: '' });
+  };
+
+  // Submit updated review
+  const handleUpdate = async (reviewId) => {
+    if (!editData.rating || !editData.comment) return;
+    setActionLoading(true);
+    try {
+      const res = await updateUserReview(reviewId, editData.rating, editData.comment);
+      if (res.success) {
+        // Update review in state
+        setReviews((prev) =>
+          prev.map((r) => (r.id === reviewId ? { ...r, ...editData, updated_at: new Date().toISOString() } : r))
+        );
+        handleCancelEdit();
+      } else {
+        alert(res.message || 'Failed to update review');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error updating review');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Delete a review
+  const handleDelete = async (reviewId) => {
+    if (!window.confirm('Are you sure you want to delete this review?')) return;
+    setActionLoading(true);
+    try {
+      const res = await deleteUserReview(reviewId);
+      if (res.success) {
+        setReviews((prev) => prev.filter((r) => r.id !== reviewId));
+      } else {
+        alert(res.message || 'Failed to delete review');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error deleting review');
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   return (
     <>
@@ -58,11 +121,67 @@ const RatingsReviewsPage = () => {
                   )}
                   <h3 className="font-semibold text-gray-900">{review.apps?.name || 'App'}</h3>
                 </div>
-                <p className="text-gray-700 mb-1">Rating: {review.rating} ★</p>
-                <p className="text-gray-600">{review.comment}</p>
-                <p className="text-sm text-gray-400 mt-1">
-                  Reviewed on: {new Date(review.created_at).toLocaleDateString()}
-                </p>
+
+                {editingReviewId === review.id ? (
+                  <div>
+                    <div className="mb-2">
+                      <label className="block text-gray-700 mb-1">Rating (1-5)</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="5"
+                        value={editData.rating}
+                        onChange={(e) => setEditData({ ...editData, rating: e.target.value })}
+                        className="border rounded w-20 px-2 py-1"
+                      />
+                    </div>
+                    <div className="mb-2">
+                      <label className="block text-gray-700 mb-1">Comment</label>
+                      <textarea
+                        value={editData.comment}
+                        onChange={(e) => setEditData({ ...editData, comment: e.target.value })}
+                        className="border rounded w-full px-2 py-1"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleUpdate(review.id)}
+                        disabled={actionLoading}
+                        className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700"
+                      >
+                        {actionLoading ? 'Updating...' : 'Update'}
+                      </button>
+                      <button
+                        onClick={handleCancelEdit}
+                        className="bg-gray-300 px-4 py-1 rounded hover:bg-gray-400"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-gray-700 mb-1">Rating: {review.rating} ★</p>
+                    <p className="text-gray-600 mb-1">{review.comment}</p>
+                    <p className="text-sm text-gray-400 mb-2">
+                      Reviewed on: {new Date(review.created_at).toLocaleDateString()}
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEdit(review)}
+                        className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(review.id)}
+                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))
           )}

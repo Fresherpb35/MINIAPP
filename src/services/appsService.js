@@ -2,29 +2,28 @@
 import api from '../config/api';
 
 /**
- * Search apps with advanced filters
+ * Search apps (simple name-based search)
  */
 export const searchApps = async ({
-  q = '',
-  category,
-  minRating,
-  maxPrice,
-  sortBy = 'relevance', // relevance | downloads | rating | newest
+  q,
+  sortBy = 'downloads', // ✅ FIX: no relevance
   page = 1,
   limit = 10,
 } = {}) => {
-  return api.get('/api/apps/search', {
-    params: {
-      q,
-      category,
-      minRating,
-      maxPrice,
-      sortBy,
-      page,
-      limit,
-    },
-  });
+  const params = {
+    sortBy,
+    page,
+    limit,
+  };
+
+  // only send q if it exists
+  if (q && q.trim()) {
+    params.q = q.trim();
+  }
+
+  return api.get('/api/apps/search', { params });
 };
+
 
 /**
  * Get all categories
