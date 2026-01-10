@@ -124,16 +124,7 @@ const DeveloperConsolePage = () => {
                 My Apps
               </button>
 
-              <button
-                onClick={() => setActiveTab('analytics')}
-                className={`px-6 py-3 rounded-xl font-medium transition-all ${
-                  activeTab === 'analytics'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'bg-transparent text-gray-700 hover:bg-white/60'
-                }`}
-              >
-                Analytics
-              </button>
+           
             </div>
 
             <div className="px-6 py-8 min-h-[60vh]">

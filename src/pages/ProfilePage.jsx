@@ -349,11 +349,7 @@ const SettingsPage = () => {
                     label="Upload App"
                     onClick={() => navigate('/upload-app')}
                   />
-                  <SettingItem
-                    icon={TrendingUp}
-                    label="Analytics"
-                    onClick={() => navigate('/analytics')}
-                  />
+                
                 </div>
               </section>
             )}

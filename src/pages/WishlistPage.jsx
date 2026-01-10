@@ -29,7 +29,6 @@ const WishlistPage = () => {
 
       try {
         const res = await getUserWishlist(1, 50);
-
         if (res.success) {
           setWishlist(res.data || []);
         } else {
@@ -52,7 +51,6 @@ const WishlistPage = () => {
     fetchWishlist();
   }, [navigate]);
 
-  // Remove app
   const handleRemove = async (appId, appName) => {
     setRemovingId(appId);
     try {
@@ -71,7 +69,6 @@ const WishlistPage = () => {
     }
   };
 
-  // Navigate to app detail
   const goToApp = (appId) => navigate(`/app/${appId}`);
 
   return (
@@ -79,34 +76,42 @@ const WishlistPage = () => {
       <Sidebar />
       <div className="min-h-screen bg-gray-50">
         <Header title="My Wishlist" showNotification={true} />
-        <div className="lg:ml-64">
-          <main className="px-6 py-6 pb-24 lg:pb-6 max-w-6xl mx-auto">
 
-            {/* Feedback */}
+        <div className="lg:ml-64">
+          <main className="px-4 sm:px-6 py-6 pb-24 lg:pb-6 max-w-7xl mx-auto">
+            {/* Toast-like message */}
             {message && (
-              <div className={`mb-6 p-4 rounded-lg text-center font-medium ${
-                message.includes('removed') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-              }`}>
+              <div
+                className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-xl shadow-lg text-white font-medium transition-all duration-300 transform ${
+                  message.includes('removed') ? 'bg-green-600' : 'bg-red-600'
+                }`}
+              >
                 {message}
               </div>
             )}
 
-            {/* Loading */}
+            {/* Loading State */}
             {loading && (
-              <div className="flex flex-col items-center justify-center py-20">
-                <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="text-gray-600 text-lg">Loading your wishlist...</p>
+              <div className="flex flex-col items-center justify-center min-h-[60vh]">
+                <div className="relative">
+                  <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                  <Heart className="absolute inset-0 m-auto w-8 h-8 text-blue-600 animate-pulse" />
+                </div>
+                <p className="mt-6 text-gray-600 text-lg font-medium">Loading your favorites...</p>
               </div>
             )}
 
-            {/* Error */}
-            {error && !loading && (
-              <div className="text-center py-20">
-                <p className="text-red-600 text-lg font-medium mb-4">{error}</p>
+            {/* Error State */}
+            {!loading && error && (
+              <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+                <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6">
+                  <Trash2 className="w-10 h-10 text-red-600" />
+                </div>
+                <h2 className="text-2xl font-semibold text-gray-800 mb-3">{error}</h2>
                 {error.includes('sign in') && (
                   <button
                     onClick={() => navigate('/signin')}
-                    className="px-6 py-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition"
+                    className="mt-4 px-8 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition shadow-md"
                   >
                     Sign In
                   </button>
@@ -114,37 +119,41 @@ const WishlistPage = () => {
               </div>
             )}
 
-            {/* Empty */}
+            {/* Empty State */}
             {!loading && !error && wishlist.length === 0 && (
-              <div className="text-center py-20">
-                <Heart className="w-24 h-24 text-gray-300 mx-auto mb-6" />
-                <p className="text-2xl font-medium text-gray-600 mb-2">Your wishlist is empty</p>
-                <p className="text-gray-500 mb-6">Apps you ❤️ will appear here</p>
+              <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+                <div className="w-32 h-32 bg-pink-50 rounded-full flex items-center justify-center mb-8">
+                  <Heart className="w-16 h-16 text-pink-400" />
+                </div>
+                <h2 className="text-3xl font-bold text-gray-800 mb-3">Your Wishlist is Empty</h2>
+                <p className="text-lg text-gray-600 mb-8 max-w-md">
+                  Start adding apps you love by tapping the heart icon on any app page
+                </p>
                 <button
                   onClick={() => navigate('/home')}
-                  className="px-8 py-3 bg-blue-500 text-white rounded-full font-semibold hover:bg-blue-600 transition"
+                  className="px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition shadow-lg transform hover:-translate-y-0.5"
                 >
-                  Browse Apps
+                  Discover Apps
                 </button>
               </div>
             )}
 
             {/* Wishlist Grid */}
             {!loading && wishlist.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5 sm:gap-6">
                 {wishlist.map((item) => {
                   const app = item.apps;
                   return (
                     <div
                       key={item.id}
-                      className="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                      className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer border border-gray-100"
                       onClick={() => goToApp(app.id)}
                     >
-                      <div className="aspect-square relative">
+                      <div className="relative aspect-square">
                         <img
                           src={app.icon_url || '/placeholder.png'}
                           alt={app.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                         <button
                           onClick={(e) => {
@@ -152,25 +161,32 @@ const WishlistPage = () => {
                             handleRemove(app.id, app.name);
                           }}
                           disabled={removingId === app.id}
-                          className="absolute top-2 right-2 p-2 bg-white/90 backdrop-blur rounded-full hover:bg-white transition"
+                          className="absolute top-3 right-3 p-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-md hover:bg-white transition-all duration-200 opacity-90 hover:opacity-100"
                           title="Remove from wishlist"
                         >
                           {removingId === app.id ? (
-                            <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                            <div className="w-5 h-5 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
                           ) : (
-                            <Trash2 className="w-4 h-4 text-red-600" />
+                            <Trash2 className="w-5 h-5 text-red-600" />
                           )}
                         </button>
                       </div>
-                      <div className="p-3">
-                        <h3 className="font-medium text-gray-900 truncate">{app.name}</h3>
+
+                      <div className="p-4">
+                        <h3 className="font-semibold text-gray-900 truncate text-lg group-hover:text-blue-700 transition-colors">
+                          {app.name}
+                        </h3>
                         <p className="text-sm text-gray-500 mt-1">{app.category}</p>
-                        <div className="flex items-center justify-between mt-2">
-                          <span className="text-sm text-gray-600">
-                            ★ {app.average_rating?.toFixed(1) || '0.0'}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {app.downloads?.toLocaleString() || '0'} dl
+
+                        <div className="flex items-center justify-between mt-3">
+                          <div className="flex items-center gap-1">
+                            <span className="text-yellow-500">★</span>
+                            <span className="font-medium text-gray-700">
+                              {app.average_rating?.toFixed(1) || '—'}
+                            </span>
+                          </div>
+                          <span className="text-xs text-gray-500 font-medium">
+                            {app.downloads?.toLocaleString() || '0'} downloads
                           </span>
                         </div>
                       </div>
@@ -179,7 +195,6 @@ const WishlistPage = () => {
                 })}
               </div>
             )}
-
           </main>
         </div>
       </div>

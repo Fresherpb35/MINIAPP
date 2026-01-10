@@ -236,12 +236,7 @@ const HomePage = () => {
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold text-gray-900">Popular This Week</h2>
-              <button
-                onClick={() => navigate('/home')}
-                className="text-blue-500 font-semibold hover:text-blue-600"
-              >
-                See All
-              </button>
+             
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {popularApps.map((app) => (
