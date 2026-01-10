@@ -18,6 +18,7 @@ import RatingsReviewsPage from '../pages/RatingsReviewsPage';
 import CategoryDetailPage from '../pages/CategoryDetailPage';
 import ResetPasswordPage from '../pages/ResetPasswordPage';
 import AppStorePage from '../pages/TaskMaster'; // This is your individual app detail page
+import AuthCallbackPage from '../pages/AuthCallbackPage';
 
 const AppRoutes = () => {
   return (
@@ -29,6 +30,7 @@ const AppRoutes = () => {
       <Route path="/otp-login" element={<LoginViaOTPPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+<Route path="/auth/callback" element={<AuthCallbackPage />} />
 
       <Route path="/categories" element={<CategoriesPage />} />
       <Route path="/category/:categoryName" element={<CategoryDetailPage />} />
