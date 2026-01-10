@@ -19,33 +19,25 @@ const SignUpPage = () => {
   const [success, setSuccess] = useState('');
 
   const handleGoogleSignUp = async () => {
-    setError('');
-    setGoogleLoading(true);
+  setError('');
+  setGoogleLoading(true);
 
-    try {
-      const redirectTo = import.meta.env.PROD
-        ? 'https://miniapp-six-wine.vercel.app/auth/callback'
-        : `${window.location.origin}/auth/callback`;
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
 
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo,
-          queryParams: {
-            access_type: 'offline', // optional: gets refresh token
-            prompt: 'consent',      // optional: forces consent screen
-          },
-        },
-      });
+    if (error) throw error;
+  } catch (err) {
+    console.error('Google sign-in error:', err);
+    setError(err.message || 'Failed to start Google sign-in.');
+    setGoogleLoading(false);
+  }
+};
 
-      if (error) throw error;
-      // Note: No need to set loading false here — redirect happens immediately
-    } catch (err) {
-      console.error('Google sign-in error:', err);
-      setError(err.message || 'Failed to start Google sign-in. Please try again.');
-      setGoogleLoading(false);
-    }
-  };
 
   const handleSubmit = async () => {
     if (!agreed) {
