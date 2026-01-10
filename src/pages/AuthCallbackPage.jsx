@@ -1,4 +1,3 @@
-// src/pages/AuthCallbackPage.tsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../config/supabase';
@@ -10,44 +9,46 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const recoverSession = async () => {
       try {
-        console.log('[Callback] Attempting immediate session recovery...');
+        console.log('[AuthCallback] Parsing session from URL...');
 
-        // Force session recovery from URL hash/fragment
-        const { data, error } = await supabase.auth.getSession();
+        // 1️⃣ Attempt to parse session from URL (OAuth / magic link)
+        const { data, error } = await supabase.auth.getSessionFromUrl({
+          storeSession: true, // store session in browser
+        });
 
         if (error) {
-          console.error('[Callback] getSession error:', error);
+          console.error('[AuthCallback] getSessionFromUrl error:', error);
           throw error;
         }
 
-        // Safety check: data might be number/status code in rare bugs
-        if (typeof data === 'number') {
-          console.warn('[Callback] Unexpected numeric response from getSession:', data);
-          throw new Error('Invalid session response');
+        // 2️⃣ Ensure data.session exists
+        if (!data?.session) {
+          throw new Error('No session returned from OAuth callback');
         }
 
-        if (data?.session) {
-          console.log('[Callback] Session recovered:', data.session.user?.email);
-          setStatus('success');
-          setTimeout(() => navigate('/home', { replace: true }), 1000);
-          return;
-        }
+        console.log('[AuthCallback] Session recovered:', data.session.user?.email);
 
-        // Fallback: wait & listen (rare timing issue)
-        console.log('[Callback] No session yet — starting listener');
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-          if (session) {
-            console.log('[Callback] Session via listener:', session.user?.email);
-            setStatus('success');
-            setTimeout(() => navigate('/home', { replace: true }), 1000);
-          }
+        // 3️⃣ Optional: You can access refresh_token & provider_token here if needed
+        const accessToken = data.session.access_token;
+        const refreshToken = data.session.refresh_token;
+        const providerToken = data.session.provider_token; // e.g., Google
+
+        console.log('[AuthCallback] Tokens:', {
+          accessToken,
+          refreshToken,
+          providerToken,
         });
 
-        // Cleanup
-        return () => subscription.unsubscribe();
+        // 4️⃣ Success UI
+        setStatus('success');
+
+        // 5️⃣ Navigate to home/dashboard
+        setTimeout(() => navigate('/home', { replace: true }), 1000);
       } catch (err) {
-        console.error('[Callback] Full recovery failed:', err);
+        console.error('[AuthCallback] Session recovery failed:', err);
         setStatus('error');
+
+        // Redirect back to signin after showing error
         setTimeout(() => navigate('/signin', { replace: true }), 3000);
       }
     };
