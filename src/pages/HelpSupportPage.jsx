@@ -31,11 +31,7 @@ const HelpSupportPage = () => {
               </p>
             </div>
 
-            {/* Search-like hint (optional future feature) */}
-            <div className="mb-12">
-            
-            </div>
-
+           
             {/* FAQs - Accordion style (expandable) */}
             <section className="mb-16">
               <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">

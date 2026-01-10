@@ -28,8 +28,9 @@ const SignUpPage = () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-redirectTo: `${window.location.origin}/auth/callback`
-      },
+redirectTo: import.meta.env.PROD 
+  ? 'https://miniapp-six-wine.vercel.app/auth/callback'
+  : `${window.location.origin}/auth/callback`      },
     });
 
     if (error) {
