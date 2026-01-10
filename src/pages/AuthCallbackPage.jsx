@@ -1,22 +1,24 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from '../config/supabase'; // ✅ ADD THIS
+import { supabase } from "../config/supabase";
 
 const AuthCallbackPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === "SIGNED_IN" && session) {
-          navigate("/home", { replace: true });
-        }
-      }
-    );
+    const handleCallback = async () => {
+      const { data, error } = await supabase.auth.getSession();
 
-    return () => {
-      listener.subscription.unsubscribe();
+      if (error || !data?.session) {
+        navigate("/signin", { replace: true });
+        return;
+      }
+
+      // ✅ Session exists and is stored
+      navigate("/home", { replace: true });
     };
+
+    handleCallback();
   }, [navigate]);
 
   return (
