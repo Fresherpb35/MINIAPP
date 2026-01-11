@@ -50,42 +50,25 @@ const AuthCallback = () => {
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
-        const errorHash = hashParams.get('error');
-        const errorDescriptionHash = hashParams.get('error_description');
-        
-        if (errorHash) {
-          throw new Error(errorDescriptionHash || errorHash);
-        }
         
         if (accessToken) {
           console.log('✅ Found tokens in hash, setting session...');
           setStatus('Setting up session...');
           
-          try {
-            const { data, error: sessionError } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken,
-            });
+          const { data, error: sessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
 
-            if (sessionError) {
-              console.error('❌ Session error:', sessionError);
-              
-              // If API key error, it might be a config issue
-              if (sessionError.message.includes('Invalid API key')) {
-                throw new Error('Configuration error. Please check your Supabase API keys.');
-              }
-              
-              throw sessionError;
-            }
+          if (sessionError) {
+            console.error('❌ Session error:', sessionError);
+            throw sessionError;
+          }
 
-            if (data?.session) {
-              console.log('✅ Session set from hash tokens');
-              await handleSuccessfulAuth(data.session);
-              return;
-            }
-          } catch (err) {
-            console.error('❌ Error setting session:', err);
-            throw err;
+          if (data?.session) {
+            console.log('✅ Session set from hash tokens');
+            await handleSuccessfulAuth(data.session);
+            return;
           }
         }
 

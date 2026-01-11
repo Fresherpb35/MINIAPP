@@ -23,16 +23,20 @@ const SignUpPage = () => {
     setGoogleLoading(true);
 
     try {
-      // Don't use backend for OAuth - do it directly from frontend
+      // Always use the current origin to ensure it matches Supabase settings
       const redirectUrl = `${window.location.origin}/auth/callback`;
       
       console.log('🔐 Starting OAuth with redirect:', redirectUrl);
+      console.log('🌐 Current origin:', window.location.origin);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: redirectUrl,
-          skipBrowserRedirect: false, // Allow browser redirect
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
       });
 
@@ -43,8 +47,7 @@ const SignUpPage = () => {
         throw error;
       }
       
-      // Browser will redirect to Google, then back to /auth/callback
-      // No need to do anything else here
+      // OAuth will redirect automatically
     } catch (err) {
       console.error('❌ Google sign-in error:', err);
       setError(err.message || 'Failed to start Google sign-in.');
