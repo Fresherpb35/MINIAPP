@@ -23,8 +23,11 @@ const SignUpPage = () => {
     setGoogleLoading(true);
 
     try {
-      // Use window.location.origin for dynamic redirect URL
+      // Always use the current origin to ensure it matches Supabase settings
       const redirectUrl = `${window.location.origin}/auth/callback`;
+      
+      console.log('🔐 Starting OAuth with redirect:', redirectUrl);
+      console.log('🌐 Current origin:', window.location.origin);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -37,11 +40,16 @@ const SignUpPage = () => {
         },
       });
 
-      if (error) throw error;
+      console.log('📤 OAuth response:', { data, error });
+
+      if (error) {
+        console.error('OAuth error details:', error);
+        throw error;
+      }
       
-      // OAuth will redirect, so we don't need to do anything else here
+      // OAuth will redirect automatically
     } catch (err) {
-      console.error('Google sign-in error:', err);
+      console.error('❌ Google sign-in error:', err);
       setError(err.message || 'Failed to start Google sign-in.');
       setGoogleLoading(false);
     }

@@ -15,7 +15,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    flowType: 'pkce',
-    storage: window.localStorage // 🔥 THIS FIXES EVERYTHING
+    flowType: 'implicit', // Changed to implicit flow to avoid PKCE issues
+    storage: window.localStorage,
+    storageKey: 'supabase.auth.token',
+    debug: true
   },
 })
