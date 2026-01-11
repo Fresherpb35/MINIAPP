@@ -8,14 +8,14 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleAuth = async () => {
       try {
-        // This reads the OAuth code from the URL and creates a session
-        const { data, error } = await supabase.auth.getSessionFromUrl()
+        // This will automatically detect session from URL if detectSessionInUrl=true
+        const { data: { session }, error } = await supabase.auth.getSession()
         if (error) throw error
 
-        if (data?.session) {
-          navigate('/profile') // now profile works
+        if (session) {
+          navigate('/home') // login successful
         } else {
-          navigate('/signin')
+          navigate('/signin') // no session
         }
       } catch (err) {
         console.error('OAuth callback error:', err)
