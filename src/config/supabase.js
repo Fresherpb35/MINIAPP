@@ -12,12 +12,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true,
-    flowType: 'implicit', // Changed to implicit flow to avoid PKCE issues
-    storage: window.localStorage,
-    storageKey: 'supabase.auth.token',
-    debug: true
+    autoRefreshToken: true,
   },
 })
