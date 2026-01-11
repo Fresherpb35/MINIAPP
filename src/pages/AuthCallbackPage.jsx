@@ -1,4 +1,3 @@
-// src/pages/AuthCallbackPage.tsx
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../config/supabase';
@@ -7,37 +6,31 @@ export default function AuthCallbackPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleOAuthCallback = async () => {
-      // Supabase v2 automatically stores session
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession();
+    const finishLogin = async () => {
+      const { data, error } = await supabase.auth.getSession();
 
-      if (error || !session) {
-        console.error('OAuth failed:', error);
+      if (error || !data.session) {
+        console.error('OAuth session missing', error);
         navigate('/signin', { replace: true });
         return;
       }
 
-      console.log('OAuth success:', session.user.email);
-
-      // OPTIONAL: send token to backend
-      await fetch('https://mini-app-b249.onrender.com/api/protected', {
+      // OPTIONAL: sync user with backend
+      await fetch('https://mini-app-b249.onrender.com/api/auth/me', {
         headers: {
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${data.session.access_token}`,
         },
       });
 
       navigate('/home', { replace: true });
     };
 
-    handleOAuthCallback();
+    finishLogin();
   }, [navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      Completing login...
+      Completing Google login...
     </div>
   );
 }
