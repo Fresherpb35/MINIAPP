@@ -18,50 +18,16 @@ const SignUpPage = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const handleGoogleSignUp = async () => {
-    setError('');
-    setGoogleLoading(true);
-
-    try {
-      const redirectUrl = `${window.location.origin}/auth/callback`;
-      
-      console.log('=== GOOGLE OAUTH INITIATION ===');
-      console.log('🔐 Redirect URL:', redirectUrl);
-      console.log('🌐 Current origin:', window.location.origin);
-      console.log('📦 Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
-      console.log('🔑 Anon key present?', !!import.meta.env.VITE_SUPABASE_ANON_KEY);
-      
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUrl,
-          skipBrowserRedirect: false,
-        },
-      });
-
-      console.log('📤 OAuth Response:');
-      console.log('  - Data:', data);
-      console.log('  - Error:', error);
-      console.log('  - URL to redirect:', data?.url);
-
-      if (error) {
-        console.error('❌ OAuth initiation error:', error);
-        throw error;
-      }
-      
-      if (data?.url) {
-        console.log('✅ Redirecting to Google OAuth...');
-        // Browser will redirect automatically
-      } else {
-        console.warn('⚠️ No redirect URL received from Supabase');
-      }
-    } catch (err) {
-      console.error('❌ Google sign-in error:', err);
-      setError(err.message || 'Failed to start Google sign-in.');
-      setGoogleLoading(false);
-    }
-  };
-
+ // In your frontend SignUpPage - this is all you need
+const handleGoogleSignUp = async () => {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
+  });
+  // Browser redirects automatically
+};
   const handleSubmit = async () => {
     if (!agreed) {
       setError('You must agree to the terms and conditions');
