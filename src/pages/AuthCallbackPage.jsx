@@ -12,23 +12,10 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Clear any corrupted session first
-        console.log('🧹 Clearing any existing sessions...');
-        await supabase.auth.signOut();
-        
         console.log('🔄 Auth callback started');
         console.log('📍 Current URL:', window.location.href);
         console.log('🔗 Hash:', window.location.hash);
         console.log('🔗 Search params:', window.location.search);
-        
-        // Parse and log hash params
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        console.log('🔑 Hash contains access_token?', hashParams.has('access_token'));
-        console.log('🔑 Hash contains error?', hashParams.has('error'));
-        if (hashParams.has('error')) {
-          console.log('❌ OAuth error in hash:', hashParams.get('error'));
-          console.log('❌ OAuth error description:', hashParams.get('error_description'));
-        }
 
         // Check for error in URL params
         const errorParam = searchParams.get('error');
@@ -63,48 +50,25 @@ const AuthCallback = () => {
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
-        const errorHash = hashParams.get('error');
-        const errorDescriptionHash = hashParams.get('error_description');
-        
-        if (errorHash) {
-          throw new Error(errorDescriptionHash || errorHash);
-        }
         
         if (accessToken) {
-          console.log('✅ Found tokens in hash');
-          console.log('🔑 Access token (first 50 chars):', accessToken.substring(0, 50) + '...');
-          setStatus('Verifying authentication...');
+          console.log('✅ Found tokens in hash, setting session...');
+          setStatus('Setting up session...');
           
-          // Instead of setSession, try to get user directly with the token
-          try {
-            const { data: userData, error: userError } = await supabase.auth.getUser(accessToken);
-            
-            if (userError) {
-              console.error('❌ Get user error:', userError);
-              
-              if (userError.message.includes('Invalid API key') || userError.message.includes('JWT')) {
-                throw new Error('Authentication token is invalid. This might be a Supabase configuration issue. Please verify your Google OAuth settings in Supabase Dashboard.');
-              }
-              
-              throw userError;
-            }
+          const { data, error: sessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
 
-            if (userData?.user) {
-              console.log('✅ User verified:', userData.user.email);
-              
-              // Manually store the session
-              const session = {
-                access_token: accessToken,
-                refresh_token: refreshToken,
-                user: userData.user
-              };
-              
-              await handleSuccessfulAuth(session);
-              return;
-            }
-          } catch (err) {
-            console.error('❌ Error verifying user:', err);
-            throw err;
+          if (sessionError) {
+            console.error('❌ Session error:', sessionError);
+            throw sessionError;
+          }
+
+          if (data?.session) {
+            console.log('✅ Session set from hash tokens');
+            await handleSuccessfulAuth(data.session);
+            return;
           }
         }
 
