@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Code, Upload, TrendingUp, Heart, Star, Bell, Shield, HelpCircle,
+  Code, Upload, Heart, Star, Bell, Shield, HelpCircle,
   LogOut, User, Mail, Edit2, Save, X, Camera, Phone, FileText, Lock, Users
 } from 'lucide-react';
 
@@ -216,6 +216,7 @@ const SettingsPage = () => {
                 </div>
 
                 <div className="flex items-start gap-6">
+                  {/* Avatar */}
                   <div className="relative">
                     <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center border-2 border-dashed border-gray-400 overflow-hidden">
                       {user.avatar_url ? (
@@ -239,83 +240,24 @@ const SettingsPage = () => {
                     )}
                   </div>
 
+                  {/* Profile Details */}
                   <div className="flex-1">
                     {isEditing ? (
                       <div className="space-y-4">
-                        {/* Edit Fields */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
-                          <input
-                            type="text"
-                            value={editForm.name}
-                            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                          <input
-                            type="email"
-                            value={editForm.email}
-                            onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-                          <input
-                            type="tel"
-                            value={editForm.phone}
-                            onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Bio</label>
-                          <textarea
-                            value={editForm.bio}
-                            onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
-                            rows={3}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                          />
-                        </div>
+                        <inputField label="Name" value={editForm.name} onChange={(val) => setEditForm({ ...editForm, name: val })} />
+                        <inputField label="Email" value={editForm.email} onChange={(val) => setEditForm({ ...editForm, email: val })} type="email" />
+                        <inputField label="Phone" value={editForm.phone} onChange={(val) => setEditForm({ ...editForm, phone: val })} type="tel" />
+                        <textareaField label="Bio" value={editForm.bio} onChange={(val) => setEditForm({ ...editForm, bio: val })} />
                         <button
                           onClick={handleSaveProfile}
                           disabled={saving}
                           className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <Save size={18} />
-                          {saving ? 'Saving...' : 'Save Changes'}
+                          <Save size={18} /> {saving ? 'Saving...' : 'Save Changes'}
                         </button>
                       </div>
                     ) : (
-                      <div className="space-y-3">
-                        {/* Display Profile */}
-                        <h2 className="text-2xl font-semibold text-gray-900">{user.name}</h2>
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Mail size={16} />
-                          <span className="text-sm">{user.email}</span>
-                        </div>
-                        {user.phone && (
-                          <div className="flex items-center gap-2 text-gray-600">
-                            <Phone size={16} />
-                            <span className="text-sm">{user.phone}</span>
-                          </div>
-                        )}
-                        {user.bio && (
-                          <div className="flex items-start gap-2 text-gray-600">
-                            <FileText size={16} className="mt-0.5" />
-                            <span className="text-sm">{user.bio}</span>
-                          </div>
-                        )}
-                        {/* Role Display */}
-                        <div className="flex items-center gap-2 text-gray-600 mt-3 pt-3 border-t border-gray-200">
-                          <Users size={16} />
-                          <span className="text-sm font-medium">
-                            Role: <span className="capitalize text-blue-600">{user.role}</span>
-                          </span>
-                        </div>
-                      </div>
+                      <displayProfile user={user} />
                     )}
                   </div>
                 </div>
@@ -326,8 +268,7 @@ const SettingsPage = () => {
                       onClick={() => setShowPasswordModal(true)}
                       className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
                     >
-                      <Lock size={18} />
-                      Change Password
+                      <Lock size={18} /> Change Password
                     </button>
                   </div>
                 )}
@@ -339,17 +280,8 @@ const SettingsPage = () => {
               <section className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Developer</h2>
                 <div className="bg-white rounded-2xl overflow-hidden border border-gray-200 divide-y divide-gray-200">
-                  <SettingItem
-                    icon={Code}
-                    label="Developer Console"
-                    onClick={() => navigate('/developer-console')}
-                  />
-                  <SettingItem
-                    icon={Upload}
-                    label="Upload App"
-                    onClick={() => navigate('/upload-app')}
-                  />
-                
+                  <SettingItem icon={Code} label="Developer Console" onClick={() => navigate('/developer-console')} />
+                  <SettingItem icon={Upload} label="Upload App" onClick={() => navigate('/upload-app')} />
                 </div>
               </section>
             )}
@@ -371,25 +303,26 @@ const SettingsPage = () => {
               onClick={handleLogout}
               className="w-full py-4 bg-red-100 text-red-600 font-semibold rounded-2xl hover:bg-red-200 transition-colors flex items-center justify-center gap-3"
             >
-              <LogOut size={20} />
-              Log Out
+              <LogOut size={20} /> Log Out
             </button>
           </main>
         </div>
       </div>
       <MobileBottomNav />
 
-      {/* Password Change Modal */}
+      {/* Password Modal */}
       {showPasswordModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">Change Password</h3>
-              <button onClick={() => { setShowPasswordModal(false); setNewPassword(''); setMessage({ type: '', text: '' }); }} className="p-2 hover:bg-gray-100 rounded-full">
+              <button
+                onClick={() => { setShowPasswordModal(false); setNewPassword(''); setMessage({ type: '', text: '' }); }}
+                className="p-2 hover:bg-gray-100 rounded-full"
+              >
                 <X size={20} />
               </button>
             </div>
-
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
@@ -401,7 +334,6 @@ const SettingsPage = () => {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
-
               <button
                 onClick={handlePasswordUpdate}
                 disabled={updatingPassword}
@@ -416,5 +348,58 @@ const SettingsPage = () => {
     </>
   );
 };
+
+// Reusable Input Field Component
+const inputField = ({ label, value, onChange, type = 'text' }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+    <input
+      type={type}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    />
+  </div>
+);
+
+// Reusable Textarea Component
+const textareaField = ({ label, value, onChange }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+    <textarea
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      rows={3}
+      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+    />
+  </div>
+);
+
+// Display Profile Details
+const displayProfile = ({ user }) => (
+  <div className="space-y-3">
+    <h2 className="text-2xl font-semibold text-gray-900">{user.name}</h2>
+    <div className="flex items-center gap-2 text-gray-600">
+      <Mail size={16} /><span className="text-sm">{user.email}</span>
+    </div>
+    {user.phone && (
+      <div className="flex items-center gap-2 text-gray-600">
+        <Phone size={16} /><span className="text-sm">{user.phone}</span>
+      </div>
+    )}
+    {user.bio && (
+      <div className="flex items-start gap-2 text-gray-600">
+        <FileText size={16} className="mt-0.5" />
+        <span className="text-sm">{user.bio}</span>
+      </div>
+    )}
+    <div className="flex items-center gap-2 text-gray-600 mt-3 pt-3 border-t border-gray-200">
+      <Users size={16} />
+      <span className="text-sm font-medium">
+        Role: <span className="capitalize text-blue-600">{user.role}</span>
+      </span>
+    </div>
+  </div>
+);
 
 export default SettingsPage;
