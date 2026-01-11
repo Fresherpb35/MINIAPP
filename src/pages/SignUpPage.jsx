@@ -23,31 +23,38 @@ const SignUpPage = () => {
     setGoogleLoading(true);
 
     try {
-      // Always use the current origin to ensure it matches Supabase settings
       const redirectUrl = `${window.location.origin}/auth/callback`;
       
-      console.log('🔐 Starting OAuth with redirect:', redirectUrl);
+      console.log('=== GOOGLE OAUTH INITIATION ===');
+      console.log('🔐 Redirect URL:', redirectUrl);
       console.log('🌐 Current origin:', window.location.origin);
+      console.log('📦 Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+      console.log('🔑 Anon key present?', !!import.meta.env.VITE_SUPABASE_ANON_KEY);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: redirectUrl,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
+          skipBrowserRedirect: false,
         },
       });
 
-      console.log('📤 OAuth response:', { data, error });
+      console.log('📤 OAuth Response:');
+      console.log('  - Data:', data);
+      console.log('  - Error:', error);
+      console.log('  - URL to redirect:', data?.url);
 
       if (error) {
-        console.error('OAuth error details:', error);
+        console.error('❌ OAuth initiation error:', error);
         throw error;
       }
       
-      // OAuth will redirect automatically
+      if (data?.url) {
+        console.log('✅ Redirecting to Google OAuth...');
+        // Browser will redirect automatically
+      } else {
+        console.warn('⚠️ No redirect URL received from Supabase');
+      }
     } catch (err) {
       console.error('❌ Google sign-in error:', err);
       setError(err.message || 'Failed to start Google sign-in.');

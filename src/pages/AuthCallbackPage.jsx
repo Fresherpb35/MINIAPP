@@ -13,83 +13,46 @@ const AuthCallback = () => {
     const handleAuthCallback = async () => {
       try {
         console.log('🔄 Auth callback started');
-        console.log('📍 Current URL:', window.location.href);
-        console.log('🔗 Hash:', window.location.hash);
-        console.log('🔗 Search params:', window.location.search);
+        console.log('📍 Full URL:', window.location.href);
+        console.log('📍 Search params:', window.location.search);
 
         // Check for error in URL params
         const errorParam = searchParams.get('error');
         const errorDescription = searchParams.get('error_description');
         
         if (errorParam) {
+          console.error('❌ OAuth error:', errorParam, errorDescription);
           throw new Error(errorDescription || errorParam);
         }
 
-        // Method 1: Try exchanging code from URL
+        // Get the authorization code from URL
         const code = searchParams.get('code');
         
-        if (code) {
-          console.log('✅ Found auth code, exchanging for session...');
-          setStatus('Exchanging authorization code...');
-          
-          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-          
-          if (exchangeError) {
-            console.error('❌ Code exchange error:', exchangeError);
-            throw exchangeError;
-          }
-          
-          if (data?.session) {
-            console.log('✅ Session obtained from code exchange');
-            await handleSuccessfulAuth(data.session);
-            return;
-          }
+        if (!code) {
+          console.error('❌ No authorization code found in URL');
+          throw new Error('No authorization code received from Google');
         }
 
-        // Method 2: Try getting session from hash (implicit flow)
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-        const refreshToken = hashParams.get('refresh_token');
+        console.log('✅ Found authorization code, exchanging for session...');
+        setStatus('Exchanging authorization code...');
         
-        if (accessToken) {
-          console.log('✅ Found tokens in hash, setting session...');
-          setStatus('Setting up session...');
-          
-          const { data, error: sessionError } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
-          });
-
-          if (sessionError) {
-            console.error('❌ Session error:', sessionError);
-            throw sessionError;
-          }
-
-          if (data?.session) {
-            console.log('✅ Session set from hash tokens');
-            await handleSuccessfulAuth(data.session);
-            return;
-          }
+        // Exchange the code for a session
+        const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+        
+        if (exchangeError) {
+          console.error('❌ Code exchange error:', exchangeError);
+          throw exchangeError;
+        }
+        
+        if (!data?.session) {
+          console.error('❌ No session returned from code exchange');
+          throw new Error('Failed to establish session');
         }
 
-        // Method 3: Try getting existing session
-        console.log('🔍 Checking for existing session...');
-        const { data: { session }, error: getSessionError } = await supabase.auth.getSession();
-
-        if (getSessionError) {
-          console.error('❌ Get session error:', getSessionError);
-          throw getSessionError;
-        }
-
-        if (session) {
-          console.log('✅ Found existing session');
-          await handleSuccessfulAuth(session);
-          return;
-        }
-
-        // No session found by any method
-        console.error('❌ No session found by any method');
-        throw new Error('Authentication failed - no session established');
+        console.log('✅ Session obtained successfully');
+        console.log('👤 User:', data.session.user.email);
+        
+        await handleSuccessfulAuth(data.session);
 
       } catch (error) {
         console.error('❌ Auth callback error:', error);
@@ -106,8 +69,6 @@ const AuthCallback = () => {
       try {
         setStatus('Syncing with server...');
         const user = session.user;
-        
-        console.log('👤 User data:', user);
 
         // Send user data to your backend
         try {
