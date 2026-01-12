@@ -49,15 +49,16 @@ const Sidebar = () => {
           const isActive = activeTab === item.id;
 
           return (
-            <button
-              key={item.id}
-              onClick={() => handleTabClick(item.id)}
-              className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl mb-2 transition-all duration-200 ${
-                isActive
-                  ? 'bg-blue-50 text-blue-600 font-semibold shadow-sm'
-                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-              }`}
-            >
+           <button
+  key={item.id}
+  onClick={() => handleTabClick(item.id)}
+  className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl mb-2 cursor-pointer transition-all duration-200 ${
+    isActive
+      ? 'bg-blue-50 text-blue-600 font-semibold shadow-sm'
+      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+  }`}
+>
+
               <Icon
                 size={24}
                 strokeWidth={isActive ? 2.5 : 2}
