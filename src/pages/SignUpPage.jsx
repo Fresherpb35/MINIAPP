@@ -18,23 +18,42 @@ const SignUpPage = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
- // In your frontend SignUpPage - this is all you need
-const handleGoogleSignUp = async () => {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: import.meta.env.VITE_REDIRECT_URL,
-    },
-  });
-  // Browser redirects automatically
-};
+  const handleGoogleSignUp = async () => {
+    if (!agreed) {
+      setError('You must agree to the terms and conditions');
+      return;
+    }
+
+    // Save selected role temporarily for Google OAuth flow
+    localStorage.setItem('pending_role', role);
+
+    setGoogleLoading(true);
+    setError('');
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: import.meta.env.VITE_REDIRECT_URL || `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) throw error;
+      // Browser will redirect automatically
+    } catch (err) {
+      console.error('Google sign-up error:', err);
+      setError(err.message || 'Failed to start Google sign-up. Please try again.');
+      setGoogleLoading(false);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!agreed) {
       setError('You must agree to the terms and conditions');
       return;
     }
 
-    if (!name.trim() || !email.trim() || !password) {
+    if (!name.trim() || !email.trim() || !password.trim()) {
       setError('Please fill in all required fields');
       return;
     }
@@ -52,11 +71,6 @@ const handleGoogleSignUp = async () => {
       });
 
       setSuccess('Registration successful! Redirecting to sign in...');
-      setName('');
-      setEmail('');
-      setPassword('');
-      setRole('user');
-
       setTimeout(() => {
         navigate('/signin');
       }, 2000);
@@ -118,7 +132,7 @@ const handleGoogleSignUp = async () => {
 
           <div className="relative">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Role
+              Role <span className="text-red-500 text-xs">(required for new accounts)</span>
             </label>
             <select
               value={role}
@@ -141,7 +155,7 @@ const handleGoogleSignUp = async () => {
             />
             <label className="text-sm text-gray-600">
               I agree to the{' '}
-              <a href="/terms" className="text-blue-600 hover:underline" target="_blank">
+              <a href="/terms" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
                 Terms & Conditions
               </a>
             </label>
@@ -182,7 +196,7 @@ const handleGoogleSignUp = async () => {
               />
             }
             onClick={handleGoogleSignUp}
-            disabled={loading || googleLoading}
+            disabled={loading || googleLoading || !agreed}
             className="w-full max-w-xs"
           >
             {googleLoading ? (
