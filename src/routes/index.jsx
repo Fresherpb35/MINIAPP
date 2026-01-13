@@ -17,44 +17,44 @@ import DeveloperConsolePage from '../pages/DeveloperConsolePage';
 import RatingsReviewsPage from '../pages/RatingsReviewsPage';
 import CategoryDetailPage from '../pages/CategoryDetailPage';
 import ResetPasswordPage from '../pages/ResetPasswordPage';
-import AppStorePage from '../pages/TaskMaster'; // This is your individual app detail page
+import AppStorePage from '../pages/TaskMaster'; // individual app detail page
 import AuthCallbackPage from '../pages/AuthCallbackPage';
+
+// Import the new ProtectedRoute wrapper
+import ProtectedRoute from '../components/ProtectedRoute'; // ← adjust path if needed
 
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* Public Routes - Anyone can access */}
-      <Route path="/home" element={<HomePage />} />
+      {/* Public routes – no login required */}
       <Route path="/" element={<SignInPage />} />
+      <Route path="/home" element={<HomePage />} />
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/otp-login" element={<LoginViaOTPPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
-<Route path="/auth/callback" element={<AuthCallbackPage />} />
+      <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
       <Route path="/categories" element={<CategoriesPage />} />
       <Route path="/category/:categoryName" element={<CategoryDetailPage />} />
-      
-      {/* THIS IS THE MISSING ROUTE */}
-      <Route path="/app/:id" element={<AppStorePage />} />  {/* Individual app store page */}
-
+      <Route path="/app/:id" element={<AppStorePage />} />
       <Route path="/search" element={<SearchPage />} />
       <Route path="/help-support" element={<HelpSupportPage />} />
       <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
 
-      {/* Protected Routes - You can add auth guard later if needed */}
-      <Route path="/download" element={<DownloadsPage />} />
-      <Route path="/profile" element={<ProfilePage />} />
-      <Route path="/notifications" element={<NotificationsPage />} />
-      <Route path="/wishlist" element={<WishlistPage />} />
-      <Route path="/upload-app" element={<UploadAppPage />} />
-      <Route path="/developer-console" element={<DeveloperConsolePage />} />
-      <Route path="/ratings-reviews" element={<RatingsReviewsPage />} />
+      {/* Protected routes – require authentication */}
+      <Route element={<ProtectedRoute />}>
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/wishlist" element={<WishlistPage />} />
+        <Route path="/download" element={<DownloadsPage />} />
+        <Route path="/upload-app" element={<UploadAppPage />} />
+        <Route path="/developer-console" element={<DeveloperConsolePage />} />
+        <Route path="/ratings-reviews" element={<RatingsReviewsPage />} />
+      </Route>
 
-      {/* Optional: Redirect old wrong path */}
+      {/* Redirects & fallback */}
       <Route path="/app-store" element={<Navigate to="/" replace />} />
-
-      {/* Catch-all: Redirect unknown routes to home (or signin if you prefer) */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
