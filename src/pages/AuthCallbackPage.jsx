@@ -1,66 +1,68 @@
-// src/pages/AuthCallbackPage.jsx
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { supabase } from '../config/supabase'
+// src/pages/AuthCallback.jsx
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../config/supabase';
 
-export default function AuthCallbackPage() {
-  const navigate = useNavigate()
-  const [status, setStatus] = useState('Processing login...')
+export default function AuthCallback() {
+  const navigate = useNavigate();
+  const [status, setStatus] = useState('Completing Google signup...');
 
   useEffect(() => {
-    let mounted = true
+    let mounted = true;
 
-    const handleCallback = async () => {
+    const checkAndRedirect = async () => {
       try {
-        // Quick check (sometimes already finished)
-        const { data: { session } } = await supabase.auth.getSession()
+        // Quick check
+        const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
           if (mounted) {
-            setStatus('Success! Redirecting...')
-            navigate('/home', { replace: true })
+            setStatus('Success! Redirecting...');
+            navigate('/home', { replace: true }); // or '/profile' or wherever
           }
-          return
+          return;
         }
 
-        // Wait for real auth state change (most important part for OAuth)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-          console.log('[Callback] Event:', event, session ? 'YES' : 'NO')
+        // Wait for the real event (this is the key fix for PKCE timing)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
+          console.log('AuthCallback event:', event, sess ? 'YES session' : 'NO');
 
-          if (session?.user) {
+          if (sess?.user) {
             if (mounted) {
-              setStatus('Authenticated! Redirecting...')
-              navigate('/home', { replace: true })
+              setStatus('Authenticated! Redirecting...');
+              navigate('/home', { replace: true });
             }
           }
-        })
+        });
 
-        return () => subscription.unsubscribe()
+        return () => subscription.unsubscribe();
       } catch (err) {
-        console.error('Callback error:', err)
+        console.error(err);
         if (mounted) {
-          setStatus('Error – redirecting...')
-          setTimeout(() => navigate('/', { replace: true }), 2000)
+          setStatus('Error – going back to signup');
+          setTimeout(() => navigate('/signup', { replace: true }), 2000);
         }
       }
-    }
+    };
 
-    handleCallback()
+    checkAndRedirect();
 
     // Safety timeout
     const timeout = setTimeout(() => {
-      if (mounted) navigate('/', { replace: true })
-    }, 12000)
+      if (mounted) navigate('/signup', { replace: true });
+    }, 15000);
 
     return () => {
-      mounted = false
-      clearTimeout(timeout)
-    }
-  }, [navigate])
+      mounted = false;
+      clearTimeout(timeout);
+    };
+  }, [navigate]);
 
   return (
-    <div style={{ padding: '100px 20px', textAlign: 'center' }}>
-      <h2>{status}</h2>
-      <p>Please wait 2–6 seconds – do not refresh or close</p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center p-8 bg-white rounded-xl shadow-lg max-w-md">
+        <h2 className="text-2xl font-bold mb-4">{status}</h2>
+        <p className="text-gray-600">Please wait 2–6 seconds – do not refresh</p>
+      </div>
     </div>
-  )
+  );
 }
