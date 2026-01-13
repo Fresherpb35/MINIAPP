@@ -19,34 +19,14 @@ const SignUpPage = () => {
   const [success, setSuccess] = useState('');
 
  // In your frontend SignUpPage - this is all you need
-// Remove this completely — no need for manual handling
-// const handleGoogleSignUp = async () => { ... }
-
-// Replace with simple version (Supabase handles redirect automatically)
 const handleGoogleSignUp = async () => {
-  setGoogleLoading(true);
-  setError('');
-
-  try {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: import.meta.env.VITE_REDIRECT_URL, // e.g. https://your-app.com/ or /home or /auth/callback
-        // Optional: ask for offline access / refresh token
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent',
-        },
-      },
-    });
-
-    if (error) throw error;
-  } catch (err) {
-    console.error('Google signup error:', err);
-    setError(err.message || 'Google signup failed. Try again.');
-  } finally {
-    setGoogleLoading(false);
-  }
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: import.meta.env.VITE_REDIRECT_URL,
+    },
+  });
+  // Browser redirects automatically
 };
   const handleSubmit = async () => {
     if (!agreed) {
