@@ -226,17 +226,18 @@ const UploadAppPage = () => {
                   <div><label className="block text-gray-900 font-semibold mb-2">Package Name *</label><input type="text" name="packageName" value={formData.packageName} onChange={handleInputChange} className="w-full px-4 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base" required /></div>
                   <div><label className="block text-gray-900 font-semibold mb-2">Description *</label><textarea name="description" value={formData.description} onChange={handleInputChange} rows={5} className="w-full px-4 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base resize-none" required></textarea></div>
                   <div><label className="block text-gray-900 font-semibold mb-2">Short Description</label><input type="text" name="shortDescription" value={formData.shortDescription} onChange={handleInputChange} className="w-full px-4 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base" maxLength={100} /></div>
-                  <div><label className="block text-gray-900 font-semibold mb-2">Category *</label>
+                 <div><label className="block text-gray-900 font-semibold mb-2">Category *</label>
                     <select name="category" value={formData.category} onChange={handleInputChange} className="w-full px-4 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base bg-white cursor-pointer" required>
                       <option value="">Select Category</option>
-                      <option value="productivity">Productivity</option>
-                      <option value="education">Education</option>
-                      <option value="entertainment">Entertainment</option>
-                      <option value="health">Health</option>
-                      <option value="games">Games</option>
-                      <option value="social">Social</option>
-                      <option value="tools">Tools</option>
-                      <option value="business">Business</option>
+                      <option value="Productivity">Productivity</option>
+                      <option value="Education">Education</option>
+                      <option value="Entertainment">Entertainment</option>
+                      <option value="Health">Health</option>
+                      <option value="Games">Games</option>
+                      <option value="Social">Social</option>
+                      <option value="Tools">Tools</option>
+                      <option value="Business">Business</option>
+                      <option value="Photography">Photography</option>
                     </select>
                   </div>
                   <div>

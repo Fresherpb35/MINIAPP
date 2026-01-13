@@ -42,14 +42,39 @@ const HomePage = () => {
           getCategories(),
           getFeaturedApps(),
           getTopApps(),
-          searchApps({ sortBy: 'downloads', limit: 200 }), // Fetch all apps once, NO q
+          searchApps({ sortBy: 'downloads', limit: 200 }),
         ]);
 
-        if (catRes.data.success) setCategories(catRes.data.data || []);
-        if (featRes.data.success) setFeaturedApps(featRes.data.data || []);
-        if (topRes.data.success) setPopularApps(topRes.data.data || []);
-        if (allAppsRes.data.success) setAllApps(allAppsRes.data.data || []);
+        // Featured & popular apps
+        if (featRes.data?.success) setFeaturedApps(featRes.data.data || []);
+        if (topRes.data?.success) setPopularApps(topRes.data.data || []);
+        if (allAppsRes.data?.success) setAllApps(allAppsRes.data.data || []);
 
+        // Categories with normalized app count (same logic as CategoriesPage)
+        if (catRes.data?.success) {
+          const categoryList = catRes.data.data || catRes.data.categories || catRes.data.results || [];
+
+          const normalizedCategories = categoryList.map((cat) => {
+            const appCount =
+              cat.appCount ??
+              cat.apps_count ??
+              cat.app_count ??
+              cat.count ??
+              cat.appsCount ??
+              cat.totalApps ??
+              (Array.isArray(cat.apps) ? cat.apps.length : 0) ??
+              0;
+
+            return {
+              ...cat,
+              displayName: cat.name || cat.title || 'Unnamed',
+              displayIcon: cat.icon || cat.icon_url || cat.emoji || '📁',
+              normalizedAppCount: appCount,
+            };
+          });
+
+          setCategories(normalizedCategories);
+        }
       } catch (err) {
         console.error('HomePage fetch error:', err);
         setError('Failed to load apps. Please try again later.');
@@ -73,7 +98,6 @@ const HomePage = () => {
     setSearchLoading(true);
     const q = query.toLowerCase();
 
-    // Filter apps by name on frontend
     const filtered = allApps.filter(app => app.name?.toLowerCase().includes(q));
     setSearchResults(filtered);
     setSearchLoading(false);
@@ -92,7 +116,6 @@ const HomePage = () => {
     navigate(`/app/${appId}`);
   };
 
-  // 🔹 Handle install/download (requires login)
   const handleInstall = async (appId) => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -158,7 +181,7 @@ const HomePage = () => {
         </div>
 
         <div className="px-4 sm:px-6 lg:px-8 py-6 w-full mx-auto">
-          {/* Search Bar with enhanced styling */}
+          {/* Search Bar */}
           <div className="mb-8">
             <div className="relative">
               <SearchBar
@@ -217,7 +240,7 @@ const HomePage = () => {
             </section>
           )}
 
-          {/* Hero Card with enhanced spacing */}
+          {/* Hero & Content */}
           {!searchQuery.trim() && (
             <>
               <div className="mb-12">
@@ -229,7 +252,7 @@ const HomePage = () => {
                 />
               </div>
 
-              {/* Categories */}
+              {/* Categories - now with same count logic */}
               <section className="mb-12">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl">
@@ -242,11 +265,11 @@ const HomePage = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                   {categories.map((cat) => (
                     <CategoryCard
-                      key={cat.id}
-                      icon={cat.icon || '📱'}
-                      title={cat.name}
-                      appCount={cat.appCount || 0}
-                      onClick={() => handleCategoryClick(cat.name)}
+                      key={cat.id || cat.displayName}
+                      icon={cat.displayIcon}
+                      title={cat.displayName}
+                      appCount={cat.normalizedAppCount}
+                      onClick={() => handleCategoryClick(cat.displayName)}
                     />
                   ))}
                 </div>
@@ -305,10 +328,7 @@ const HomePage = () => {
   );
 };
 
-// ────────────────────────────────────────────────
-// Enhanced App Card Component with Fixed Dimensions
-// ────────────────────────────────────────────────
-
+// Enhanced App Card (unchanged from your code)
 const EnhancedAppCard = ({ app, onAppClick, onInstall }) => {
   return (
     <div
@@ -316,7 +336,6 @@ const EnhancedAppCard = ({ app, onAppClick, onInstall }) => {
       onClick={() => onAppClick(app.id)}
     >
       <div className="h-full bg-white rounded-2xl border-2 border-gray-200 overflow-hidden transition-all duration-300 hover:border-blue-500 hover:shadow-xl hover:-translate-y-1 flex flex-col">
-        {/* App Icon & Info - Fixed Height */}
         <div className="p-5 flex items-center gap-4 border-b border-gray-100">
           <div className="w-16 h-16 flex-shrink-0 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center overflow-hidden shadow-md">
             {app.icon_url ? (
@@ -340,7 +359,6 @@ const EnhancedAppCard = ({ app, onAppClick, onInstall }) => {
           </div>
         </div>
 
-        {/* Install Button - Fixed Height */}
         <div className="p-5 mt-auto">
           <button
             onClick={(e) => {

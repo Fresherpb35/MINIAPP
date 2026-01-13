@@ -1,3 +1,4 @@
+// src/pages/AppDetailPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Heart, ArrowLeft, Check, X, Star, Download, Package, Shield, Users, Calendar, Sparkles, Trash2 } from 'lucide-react';
@@ -16,18 +17,15 @@ const AppDetailPage = () => {
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
   
-  // Check localStorage for install status
   const [isInstalled, setIsInstalled] = useState(() => {
     const installedApps = JSON.parse(localStorage.getItem('installedApps') || '[]');
     return installedApps.includes(id);
   });
 
-  // Wishlist states
   const [isFavorited, setIsFavorited] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [wishlistMessage, setWishlistMessage] = useState('');
 
-  // Review form
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
@@ -35,7 +33,6 @@ const AppDetailPage = () => {
   const [submitMessage, setSubmitMessage] = useState('');
   const [submitError, setSubmitError] = useState('');
 
-  // Fetch app details
   useEffect(() => {
     const fetchApp = async () => {
       if (!id) return;
@@ -59,7 +56,6 @@ const AppDetailPage = () => {
     fetchApp();
   }, [id]);
 
-  // Check if app is already in wishlist
   useEffect(() => {
     const checkWishlist = async () => {
       const token = localStorage.getItem('access_token');
@@ -80,7 +76,6 @@ const AppDetailPage = () => {
     checkWishlist();
   }, [id]);
 
-  // Fetch reviews
   useEffect(() => {
     const fetchReviews = async () => {
       if (!id) return;
@@ -181,7 +176,6 @@ const AppDetailPage = () => {
 
         setDownloadProgress(100);
         
-        // Save to localStorage
         const installedApps = JSON.parse(localStorage.getItem('installedApps') || '[]');
         if (!installedApps.includes(id)) {
           installedApps.push(id);
@@ -202,7 +196,6 @@ const AppDetailPage = () => {
 
   const handleUninstall = () => {
     if (window.confirm('Are you sure you want to uninstall this app?')) {
-      // Remove from localStorage
       const installedApps = JSON.parse(localStorage.getItem('installedApps') || '[]');
       const updatedApps = installedApps.filter(appId => appId !== id);
       localStorage.setItem('installedApps', JSON.stringify(updatedApps));
@@ -251,7 +244,6 @@ const AppDetailPage = () => {
         setReviewText('');
         setHoveredRating(0);
 
-        // Refresh reviews
         const reviewsRes = await api.get(`/api/apps/${id}/reviews`, {
           params: { page: 1, limit: 10 },
         });
@@ -297,7 +289,7 @@ const AppDetailPage = () => {
           <p className="text-lg font-semibold text-red-500">{error || 'App not found'}</p>
           <button
             onClick={() => navigate(-1)}
-            className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+            className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition cursor-pointer"
           >
             Go Back
           </button>
@@ -313,7 +305,7 @@ const AppDetailPage = () => {
         <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12 py-3 sm:py-4 flex items-center gap-3">
           <button 
             onClick={() => navigate(-1)} 
-            className="p-2 hover:bg-gray-100 rounded-full transition-all duration-300 hover:scale-110"
+            className="p-2 hover:bg-gray-100 rounded-full transition-all duration-300 hover:scale-110 cursor-pointer"
           >
             <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
           </button>
@@ -372,7 +364,7 @@ const AppDetailPage = () => {
                         <button
                           onClick={handleInstall}
                           disabled={isDownloading}
-                          className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 sm:py-4 rounded-2xl font-bold hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2 text-sm sm:text-base"
+                          className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 sm:py-4 rounded-2xl font-bold hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2 text-sm sm:text-base cursor-pointer"
                         >
                           <Download className="w-5 h-5" />
                           {isDownloading ? `Downloading... ${downloadProgress}%` : 'Install Now'}
@@ -381,7 +373,7 @@ const AppDetailPage = () => {
                         <button
                           onClick={toggleWishlist}
                           disabled={wishlistLoading || isDownloading}
-                          className="p-3 sm:p-4 rounded-2xl border-2 border-gray-200 hover:border-red-300 hover:bg-red-50 transition-all duration-300 relative shadow-md hover:shadow-lg transform hover:scale-105"
+                          className="p-3 sm:p-4 rounded-2xl border-2 border-gray-200 hover:border-red-300 hover:bg-red-50 transition-all duration-300 relative shadow-md hover:shadow-lg transform hover:scale-105 cursor-pointer"
                         >
                           <Heart
                             className={`w-6 h-6 transition-all ${
@@ -424,7 +416,7 @@ const AppDetailPage = () => {
                       </button>
                       <button
                         onClick={handleUninstall}
-                        className="px-6 py-3 sm:py-4 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-2xl font-bold hover:from-red-600 hover:to-rose-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2 text-sm sm:text-base"
+                        className="px-6 py-3 sm:py-4 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-2xl font-bold hover:from-red-600 hover:to-rose-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2 text-sm sm:text-base cursor-pointer"
                       >
                         <Trash2 className="w-5 h-5" />
                         Uninstall
@@ -458,7 +450,7 @@ const AppDetailPage = () => {
                         key={i}
                         src={src}
                         alt={`Screenshot ${i + 1}`}
-                        className="w-36 sm:w-40 md:w-48 lg:w-56 h-64 sm:h-72 md:h-80 lg:h-96 object-cover rounded-2xl shadow-xl flex-shrink-0 snap-start border-2 border-gray-100 hover:scale-105 transition-transform duration-300"
+                        className="w-36 sm:w-40 md:w-48 lg:w-56 h-64 sm:h-72 md:h-80 lg:h-96 object-cover rounded-2xl shadow-xl flex-shrink-0 snap-start border-2 border-gray-100 hover:scale-105 transition-transform duration-300 cursor-pointer"
                       />
                     ))}
                   </div>
@@ -474,7 +466,7 @@ const AppDetailPage = () => {
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     {app.permissions.map((perm, i) => (
-                      <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
+                      <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100 cursor-default">
                         {perm.granted ? (
                           <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-md flex-shrink-0">
                             <Check className="w-5 h-5 text-white" />
@@ -578,7 +570,7 @@ const AppDetailPage = () => {
                       onClick={() => setRating(star)}
                       onMouseEnter={() => setHoveredRating(star)}
                       onMouseLeave={() => setHoveredRating(0)}
-                      className="focus:outline-none transform transition-transform hover:scale-110"
+                      className="focus:outline-none transform transition-transform hover:scale-110 cursor-pointer"
                     >
                       <Star
                         className={`w-8 h-8 sm:w-10 sm:h-10 transition-all ${
@@ -612,7 +604,7 @@ const AppDetailPage = () => {
                 <button
                   onClick={handleSubmitReview}
                   disabled={submittingReview || rating === 0 || !reviewText.trim()}
-                  className="w-full mt-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 sm:py-4 rounded-2xl font-bold hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base"
+                  className="w-full mt-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 sm:py-4 rounded-2xl font-bold hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base cursor-pointer"
                 >
                   {submittingReview ? 'Submitting...' : 'Submit Review'}
                 </button>
@@ -626,7 +618,7 @@ const AppDetailPage = () => {
 };
 
 const InfoCard = ({ icon, label, value }) => (
-  <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200 hover:shadow-md transition-all">
+  <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200 hover:shadow-md transition-all cursor-default">
     <div className="flex items-center gap-3">
       <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
         {icon}
@@ -640,7 +632,7 @@ const InfoCard = ({ icon, label, value }) => (
 );
 
 const InfoRow = ({ label, value }) => (
-  <div className="space-y-1 text-left">
+  <div className="space-y-1 text-left cursor-default">
     <span className="text-xs text-gray-500 font-medium block">{label}</span>
     <span className="text-sm font-bold text-gray-900 block">{value}</span>
   </div>

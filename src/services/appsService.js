@@ -36,7 +36,14 @@ export const getCategories = async () => {
  * Get apps by category
  */
 export const getAppsByCategory = async (category, page = 1, limit = 20) => {
-  return searchApps({ category, page, limit });
+  return api.get('/api/apps', {
+    params: {
+      category,
+      page,
+      limit,
+      // optional: sortBy: 'newest' or whatever you want
+    }
+  });
 };
 
 /**
