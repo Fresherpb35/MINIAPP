@@ -13,50 +13,21 @@ const ResetPasswordPage = () => {
   const [error, setError] = useState("");
   const [ready, setReady] = useState(false);
 
+  // ✅ Correct Supabase v2 recovery handling
   useEffect(() => {
-    const initRecovery = async () => {
-      try {
-        // Parse tokens from URL hash
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-        const refreshToken = hashParams.get('refresh_token');
-        const type = hashParams.get('type');
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log("Auth event:", event);
 
-        if (type !== 'recovery') {
-          setError("Invalid reset link type. Please request a new one.");
-          return;
+        if (event === "PASSWORD_RECOVERY" && session) {
+          setReady(true);
         }
-
-        if (!accessToken || !refreshToken) {
-          setError("Missing authentication tokens. Please request a new reset link.");
-          return;
-        }
-
-        // Manually set the session (bypasses automatic clock validation)
-        const { data, error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken,
-        });
-
-        if (error) {
-          console.error('Session error:', error);
-          setError("Invalid or expired reset link. Please request a new one.");
-          return;
-        }
-
-        if (!data?.session) {
-          setError("Failed to establish session. Please request a new reset link.");
-          return;
-        }
-
-        setReady(true);
-      } catch (err) {
-        console.error('Recovery error:', err);
-        setError("An error occurred. Please try again.");
       }
-    };
+    );
 
-    initRecovery();
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   const handleReset = async () => {
@@ -127,11 +98,9 @@ const ResetPasswordPage = () => {
             </Button>
           </div>
         ) : (
-          !error && (
-            <p className="text-center text-gray-600">
-              Verifying reset link…
-            </p>
-          )
+          <p className="text-center text-gray-600">
+            Verifying reset link…
+          </p>
         )}
       </div>
     </div>
