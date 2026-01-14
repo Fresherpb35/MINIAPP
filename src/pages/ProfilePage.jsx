@@ -184,37 +184,37 @@ const SettingsPage = () => {
   };
 
   // Update password
-  const handlePasswordUpdate = async () => {
-    if (!newPassword || newPassword.length < 6) {
-      setMessage({ type: 'error', text: 'Password must be at least 6 characters long' });
-      return;
-    }
+  // const handlePasswordUpdate = async () => {
+  //   if (!newPassword || newPassword.length < 6) {
+  //     setMessage({ type: 'error', text: 'Password must be at least 6 characters long' });
+  //     return;
+  //   }
 
-    setUpdatingPassword(true);
-    setMessage({ type: '', text: '' });
-    const token = localStorage.getItem('access_token');
+  //   setUpdatingPassword(true);
+  //   setMessage({ type: '', text: '' });
+  //   const token = localStorage.getItem('access_token');
 
-    try {
-      const { data } = await api.put('/api/auth/updatepassword', { newPassword }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+  //   try {
+  //     const { data } = await api.put('/api/auth/updatepassword', { newPassword }, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
 
-      if (data.success) {
-        setMessage({ type: 'success', text: 'Password updated successfully!' });
-        setShowPasswordModal(false);
-        setNewPassword('');
-        setTimeout(() => setMessage({ type: '', text: '' }), 3000);
-      } else {
-        setMessage({ type: 'error', text: data.message || 'Failed to update password' });
-      }
-    } catch (err) {
-      console.error('Update password error:', err);
-      const msg = err.response?.data?.message || 'An error occurred while updating password';
-      setMessage({ type: 'error', text: msg });
-    } finally {
-      setUpdatingPassword(false);
-    }
-  };
+  //     if (data.success) {
+  //       setMessage({ type: 'success', text: 'Password updated successfully!' });
+  //       setShowPasswordModal(false);
+  //       setNewPassword('');
+  //       setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+  //     } else {
+  //       setMessage({ type: 'error', text: data.message || 'Failed to update password' });
+  //     }
+  //   } catch (err) {
+  //     console.error('Update password error:', err);
+  //     const msg = err.response?.data?.message || 'An error occurred while updating password';
+  //     setMessage({ type: 'error', text: msg });
+  //   } finally {
+  //     setUpdatingPassword(false);
+  //   }
+  // };
 
   // Logout
   const handleLogout = async () => {
@@ -394,7 +394,7 @@ const SettingsPage = () => {
                     )}
                   </div>
 
-                  {!isEditing && (
+                  {/* {!isEditing && (
                     <div className="mt-6 pt-6 border-t border-gray-200">
                       <button
                         onClick={() => setShowPasswordModal(true)}
@@ -404,7 +404,7 @@ const SettingsPage = () => {
                         <span>Change Password</span>
                       </button>
                     </div>
-                  )}
+                  )} */}
                 </div>
               </div>
             </section>
@@ -475,7 +475,7 @@ const SettingsPage = () => {
       <MobileBottomNav />
 
       {/* Password Modal */}
-      {showPasswordModal && (
+      {/* {showPasswordModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl p-6 sm:p-8 w-full max-w-md shadow-2xl animate-in zoom-in duration-200">
             <div className="flex items-center justify-between mb-6">
@@ -518,7 +518,7 @@ const SettingsPage = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </>
   );
 };
