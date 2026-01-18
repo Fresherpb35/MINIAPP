@@ -14,44 +14,64 @@ const ResetPasswordPage = () => {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    console.log("🔹 ResetPasswordPage mounted");
+    console.log("🔹 Full URL:", window.location.href);
+    console.log("🔹 URL hash:", window.location.hash);
+
     const initRecovery = async () => {
       try {
-        // Parse tokens from URL hash
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-        const refreshToken = hashParams.get('refresh_token');
-        const type = hashParams.get('type');
+        console.log("🔹 Starting recovery init");
 
-        if (type !== 'recovery') {
+        const hash = window.location.hash.substring(1);
+        const hashParams = new URLSearchParams(hash);
+
+        const accessToken = hashParams.get("access_token");
+        const refreshToken = hashParams.get("refresh_token");
+        const type = hashParams.get("type");
+
+        console.log("🔹 Parsed hash params:", {
+          type,
+          accessToken,
+          refreshToken,
+        });
+
+        if (type !== "recovery") {
+          console.error("❌ Invalid type:", type);
           setError("Invalid reset link type. Please request a new one.");
           return;
         }
 
         if (!accessToken || !refreshToken) {
+          console.error("❌ Missing tokens");
           setError("Missing authentication tokens. Please request a new reset link.");
           return;
         }
 
-        // Manually set the session (bypasses automatic clock validation)
+        console.log("🔹 Calling supabase.auth.setSession()");
+
         const { data, error } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken,
         });
 
         if (error) {
-          console.error('Session error:', error);
+          console.error("❌ Session error:", error);
           setError("Invalid or expired reset link. Please request a new one.");
           return;
         }
 
+        console.log("✅ Session created:", data);
+
         if (!data?.session) {
+          console.error("❌ No session returned");
           setError("Failed to establish session. Please request a new reset link.");
           return;
         }
 
+        console.log("✅ Recovery session ready");
         setReady(true);
       } catch (err) {
-        console.error('Recovery error:', err);
+        console.error("❌ Recovery exception:", err);
         setError("An error occurred. Please try again.");
       }
     };
@@ -60,12 +80,16 @@ const ResetPasswordPage = () => {
   }, []);
 
   const handleReset = async () => {
+    console.log("🔹 Reset button clicked");
+
     if (newPassword.length < 6) {
+      console.error("❌ Password too short");
       setError("Password must be at least 6 characters");
       return;
     }
 
     if (newPassword !== confirmPassword) {
+      console.error("❌ Passwords do not match");
       setError("Passwords do not match");
       return;
     }
@@ -73,17 +97,24 @@ const ResetPasswordPage = () => {
     setLoading(true);
     setError("");
 
+    console.log("🔹 Updating password");
+
     const { error } = await supabase.auth.updateUser({
       password: newPassword,
     });
 
     if (error) {
+      console.error("❌ Password update error:", error);
       setError(error.message);
       setLoading(false);
       return;
     }
 
+    console.log("✅ Password updated successfully");
+
     await supabase.auth.signOut();
+    console.log("🔹 Signed out, redirecting to signin");
+
     navigate("/signin");
   };
 

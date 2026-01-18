@@ -3,14 +3,14 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Code, Upload, Heart, Star, Bell, Shield, HelpCircle,
-  LogOut, User, Mail, Edit2, Save, X, Camera, Phone, FileText, Lock, Users, CheckCircle2, AlertCircle
+  LogOut, User, Mail, Edit2, Save, X, Camera, Phone, FileText, Users, CheckCircle2, AlertCircle
 } from 'lucide-react';
 
 import Header from '../components/layout/Header';
 import Sidebar from '../components/layout/Sidebar';
 import MobileBottomNav from '../components/layout/MobileBottomNav';
 import SettingItem from '../components/ui/SettingItem';
-import api from '../config/api'; // Axios instance
+import api from '../config/api'; 
 
 const SettingsPage = () => {
   const navigate = useNavigate();
@@ -33,9 +33,6 @@ const SettingsPage = () => {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
-  const [updatingPassword, setUpdatingPassword] = useState(false);
 
   // Fetch current user
   const fetchCurrentUser = async () => {
@@ -183,39 +180,6 @@ const SettingsPage = () => {
     }
   };
 
-  // Update password
-  const handlePasswordUpdate = async () => {
-    if (!newPassword || newPassword.length < 6) {
-      setMessage({ type: 'error', text: 'Password must be at least 6 characters long' });
-      return;
-    }
-
-    setUpdatingPassword(true);
-    setMessage({ type: '', text: '' });
-    const token = localStorage.getItem('access_token');
-
-    try {
-      const { data } = await api.put('/api/auth/updatepassword', { newPassword }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (data.success) {
-        setMessage({ type: 'success', text: 'Password updated successfully!' });
-        setShowPasswordModal(false);
-        setNewPassword('');
-        setTimeout(() => setMessage({ type: '', text: '' }), 3000);
-      } else {
-        setMessage({ type: 'error', text: data.message || 'Failed to update password' });
-      }
-    } catch (err) {
-      console.error('Update password error:', err);
-      const msg = err.response?.data?.message || 'An error occurred while updating password';
-      setMessage({ type: 'error', text: msg });
-    } finally {
-      setUpdatingPassword(false);
-    }
-  };
-
   // Logout
   const handleLogout = async () => {
     const token = localStorage.getItem('access_token');
@@ -233,7 +197,7 @@ const SettingsPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 via-white to-purple-50">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Loading your settings...</p>
@@ -245,13 +209,13 @@ const SettingsPage = () => {
   return (
     <>
       <Sidebar />
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50">
         <Header title="Settings" showNotification={false} />
         <div className="lg:ml-64">
           <main className="px-4 sm:px-6 py-6 pb-24 lg:pb-8 max-w-7xl mx-auto">
             {/* Page Header */}
             <div className="mb-8">
-              <h1 className="hidden lg:block text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+              <h1 className="hidden lg:block text-4xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
                 Settings
               </h1>
               <p className="hidden lg:block text-gray-600">Manage your account and preferences</p>
@@ -267,9 +231,9 @@ const SettingsPage = () => {
                 }`}
               >
                 {message.type === 'success' ? (
-                  <CheckCircle2 size={20} className="flex-shrink-0 mt-0.5" />
+                  <CheckCircle2 size={20} className="flex-0 mt-0.5" />
                 ) : (
-                  <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />
+                  <AlertCircle size={20} className="flex-0 mt-0.5" />
                 )}
                 <span className="font-medium">{message.text}</span>
               </div>
@@ -278,14 +242,14 @@ const SettingsPage = () => {
             {/* Profile Section */}
             <section className="mb-8">
               <div className="bg-white rounded-3xl border border-gray-200 shadow-lg shadow-blue-100/50 overflow-hidden">
-                {/* Header with gradient */}
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 h-24 sm:h-32"></div>
+                {/* Header with linear */}
+                <div className="bg-linear-to-r from-blue-600 to-purple-600 h-24 sm:h-32"></div>
                 
                 <div className="px-4 sm:px-6 lg:px-8 pb-6 sm:pb-8 -mt-12 sm:-mt-16">
                   <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 sm:gap-6 mb-6">
                     {/* Avatar */}
-                    <div className="relative flex-shrink-0 group">
-                      <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center border-4 border-white shadow-xl overflow-hidden">
+                    <div className="relative flex-0 group cursor-pointer">
+                      <div className="w-24 h-24 sm:w-32 sm:h-32 bg-linear-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center border-4 border-white shadow-xl overflow-hidden">
                         {user.avatar_url ? (
                           <img
                             src={user.avatar_url}
@@ -298,7 +262,7 @@ const SettingsPage = () => {
                       </div>
                       
                       {/* Upload Button */}
-                      <label className="absolute bottom-0 right-0 p-2.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-110">
+                      <label className="absolute bottom-0 right-0 p-2.5 bg-linear-to-r from-blue-600 to-purple-600 rounded-full cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-110">
                         <Camera size={18} className="text-white" />
                         <input
                           type="file"
@@ -313,7 +277,7 @@ const SettingsPage = () => {
                       {user.avatar_url && !uploadingAvatar && (
                         <button
                           onClick={handleRemoveAvatar}
-                          className="absolute top-0 left-0 p-2 bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 hover:bg-red-600"
+                          className="absolute top-0 left-0 p-2 bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 hover:bg-red-600 cursor-pointer"
                           title="Remove profile picture"
                         >
                           <X size={18} className="text-white" />
@@ -334,14 +298,14 @@ const SettingsPage = () => {
                           {user.name || 'Your Profile'}
                         </h2>
                         <p className="text-gray-600 mt-1 flex items-center gap-2">
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 border border-blue-200">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-linear-to-r from-blue-100 to-purple-100 text-blue-700 border border-blue-200">
                             {user.role || 'user'}
                           </span>
                         </p>
                       </div>
                       <button
                         onClick={handleEditToggle}
-                        className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 self-start sm:self-auto"
+                        className="flex items-center justify-center gap-2 px-6 py-3 bg-linear-to-r from-blue-600 to-purple-600 text-white font-medium rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer self-start sm:self-auto"
                       >
                         {isEditing ? <X size={18} /> : <Edit2 size={18} />}
                         {isEditing ? 'Cancel' : 'Edit Profile'}
@@ -384,7 +348,7 @@ const SettingsPage = () => {
                         <button
                           onClick={handleSaveProfile}
                           disabled={saving}
-                          className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                          className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-linear-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 cursor-pointer"
                         >
                           <Save size={20} /> {saving ? 'Saving Changes...' : 'Save Changes'}
                         </button>
@@ -393,18 +357,6 @@ const SettingsPage = () => {
                       <DisplayProfile user={user} />
                     )}
                   </div>
-
-                  {!isEditing && (
-                    <div className="mt-6 pt-6 border-t border-gray-200">
-                      <button
-                        onClick={() => setShowPasswordModal(true)}
-                        className="flex items-center gap-2 text-blue-600 hover:text-purple-600 font-medium transition-colors group"
-                      >
-                        <Lock size={18} className="group-hover:scale-110 transition-transform" /> 
-                        <span>Change Password</span>
-                      </button>
-                    </div>
-                  )}
                 </div>
               </div>
             </section>
@@ -465,7 +417,7 @@ const SettingsPage = () => {
             {/* Logout */}
             <button
               onClick={handleLogout}
-              className="w-full py-4 bg-gradient-to-r from-red-500 to-pink-500 text-white font-semibold rounded-2xl hover:shadow-lg transition-all duration-300 hover:scale-[1.02] flex items-center justify-center gap-3"
+              className="w-full py-4 bg-linear-to-r from-red-500 to-pink-500 text-white font-semibold rounded-2xl hover:shadow-lg transition-all duration-300 hover:scale-[1.02] flex items-center justify-center gap-3 cursor-pointer"
             >
               <LogOut size={20} /> Log Out
             </button>
@@ -473,52 +425,6 @@ const SettingsPage = () => {
         </div>
       </div>
       <MobileBottomNav />
-
-      {/* Password Modal */}
-      {showPasswordModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 w-full max-w-md shadow-2xl animate-in zoom-in duration-200">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl">
-                  <Lock size={24} className="text-blue-600" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900">Change Password</h3>
-              </div>
-              <button
-                onClick={() => {
-                  setShowPasswordModal(false);
-                  setNewPassword('');
-                  setMessage({ type: '', text: '' });
-                }}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X size={24} />
-              </button>
-            </div>
-            <div className="space-y-5">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Enter new password (min 6 characters)"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                />
-                <p className="mt-2 text-xs text-gray-500">Password must be at least 6 characters long</p>
-              </div>
-              <button
-                onClick={handlePasswordUpdate}
-                disabled={updatingPassword}
-                className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-              >
-                {updatingPassword ? 'Updating Password...' : 'Update Password'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 };
@@ -532,7 +438,7 @@ const InputField = ({ label, value, onChange, type = 'text', icon: Icon }) => (
     <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
     <div className="relative">
       {Icon && (
-        <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+        <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
           <Icon size={18} />
         </div>
       )}
@@ -540,7 +446,7 @@ const InputField = ({ label, value, onChange, type = 'text', icon: Icon }) => (
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={`w-full ${Icon ? 'pl-12' : 'pl-4'} pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+        className={`w-full ${Icon ? 'pl-12' : 'pl-4'} pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-text`}
       />
     </div>
   </div>
@@ -551,7 +457,7 @@ const TextareaField = ({ label, value, onChange, icon: Icon }) => (
     <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
     <div className="relative">
       {Icon && (
-        <div className="absolute left-4 top-4 text-gray-400">
+        <div className="absolute left-4 top-4 text-gray-400 pointer-events-none">
           <Icon size={18} />
         </div>
       )}
@@ -559,7 +465,7 @@ const TextareaField = ({ label, value, onChange, icon: Icon }) => (
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={4}
-        className={`w-full ${Icon ? 'pl-12' : 'pl-4'} pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none`}
+        className={`w-full ${Icon ? 'pl-12' : 'pl-4'} pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none cursor-text`}
       />
     </div>
   </div>
@@ -573,9 +479,9 @@ const DisplayProfile = ({ user }) => (
     </div>
     
     {user.bio && (
-      <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-100">
+      <div className="p-4 bg-linear-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-100">
         <div className="flex items-start gap-3">
-          <FileText size={20} className="text-blue-600 mt-0.5 flex-shrink-0" />
+          <FileText size={20} className="text-blue-600 mt-0.5 flex-0" />
           <div>
             <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Bio</p>
             <p className="text-gray-800">{user.bio}</p>
