@@ -1,3 +1,4 @@
+// src/pages/SignUpPage.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Input from '../components/ui/Input';
@@ -24,7 +25,6 @@ const SignUpPage = () => {
       return;
     }
 
-    // Save selected role temporarily for Google OAuth flow
     localStorage.setItem('pending_role', role);
 
     setGoogleLoading(true);
@@ -39,7 +39,6 @@ const SignUpPage = () => {
       });
 
       if (error) throw error;
-      // Browser will redirect automatically
     } catch (err) {
       console.error('Google sign-up error:', err);
       setError(err.message || 'Failed to start Google sign-up. Please try again.');
@@ -155,7 +154,12 @@ const SignUpPage = () => {
             />
             <label className="text-sm text-gray-600">
               I agree to the{' '}
-              <a href="/terms" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
+              <a
+                href="/terms"
+                className="text-blue-600 hover:underline cursor-pointer"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 Terms & Conditions
               </a>
             </label>
@@ -164,7 +168,7 @@ const SignUpPage = () => {
           <Button
             onClick={handleSubmit}
             disabled={loading || googleLoading}
-            className="w-full py-3"
+            className="w-full py-3 cursor-pointer"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
@@ -197,7 +201,7 @@ const SignUpPage = () => {
             }
             onClick={handleGoogleSignUp}
             disabled={loading || googleLoading || !agreed}
-            className="w-full max-w-xs"
+            className="w-full max-w-xs cursor-pointer"
           >
             {googleLoading ? (
               <span className="flex items-center gap-2">
@@ -215,7 +219,7 @@ const SignUpPage = () => {
             Already have an account?{' '}
             <button
               onClick={() => navigate('/signin')}
-              className="text-blue-600 font-semibold hover:underline"
+              className="text-blue-600 font-semibold hover:underline cursor-pointer"
             >
               Sign In
             </button>

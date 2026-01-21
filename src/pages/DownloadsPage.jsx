@@ -57,7 +57,7 @@ const DownloadsPage = () => {
   }, []);
 
   const handleExploreStore = () => {
-    navigate('/home'); // ← adjust if your store/home route is different
+    navigate('/home');
   };
 
   const displayedDownloads = downloads.filter((download) => {
@@ -91,7 +91,7 @@ const DownloadsPage = () => {
               <div className="flex justify-center lg:justify-start gap-2 sm:gap-4 lg:gap-8">
                 <button
                   onClick={() => setActiveTab('installed')}
-                  className={`py-3 sm:py-4 px-4 sm:px-6 text-sm sm:text-base font-semibold whitespace-nowrap relative transition-all duration-300 ${
+                  className={`py-3 sm:py-4 px-4 sm:px-6 text-sm sm:text-base font-semibold whitespace-nowrap relative transition-all duration-300 cursor-pointer ${
                     activeTab === 'installed' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-900'
                   }`}
                 >
@@ -109,7 +109,7 @@ const DownloadsPage = () => {
 
                 <button
                   onClick={() => setActiveTab('history')}
-                  className={`py-3 sm:py-4 px-4 sm:px-6 text-sm sm:text-base font-semibold whitespace-nowrap relative transition-all duration-300 ${
+                  className={`py-3 sm:py-4 px-4 sm:px-6 text-sm sm:text-base font-semibold whitespace-nowrap relative transition-all duration-300 cursor-pointer ${
                     activeTab === 'history' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-900'
                   }`}
                 >
@@ -141,7 +141,6 @@ const DownloadsPage = () => {
                 </div>
               ) : displayedDownloads.length === 0 && !loading ? (
                 <div className="flex flex-col items-center justify-center py-16 sm:py-32 text-center">
-                  {/* Logo / Icon Section */}
                   <div className="relative mb-10">
                     <div className="w-28 h-28 sm:w-36 sm:h-36 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-500">
                       <Store className="w-16 h-16 sm:w-20 sm:h-20 text-white" />
@@ -162,7 +161,7 @@ const DownloadsPage = () => {
 
                   <button
                     onClick={handleExploreStore}
-                    className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold text-lg rounded-2xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 flex items-center gap-3 overflow-hidden"
+                    className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold text-lg rounded-2xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 flex items-center gap-3 overflow-hidden cursor-pointer"
                   >
                     <span className="relative z-10 flex items-center gap-3">
                       Explore Store
